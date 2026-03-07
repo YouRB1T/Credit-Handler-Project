@@ -3,17 +3,13 @@ package com.credithandler.calculator.dto.calc;
 import com.credithandler.calculator.model.Gender;
 import com.credithandler.calculator.model.MaritalStatus;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ScoringDataDto {
     private BigDecimal amount;
     private Integer term;
