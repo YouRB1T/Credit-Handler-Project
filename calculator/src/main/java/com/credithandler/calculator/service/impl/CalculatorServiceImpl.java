@@ -9,6 +9,7 @@ import com.credithandler.calculator.service.CalculatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,12 +20,32 @@ public class CalculatorServiceImpl implements CalculatorService {
 
     @Override
     public List<LoanOfferDto> provisionLoanOffers(LoanStatementRequestDto request) {
+        List<LoanOfferDto> offers = new ArrayList<>();
 
-        return List.of();
+        boolean[] insuranceOptions = {false, true};
+        boolean[] salaryOptions = {false, true};
+
+        for (boolean insuranceOption : insuranceOptions) {
+            for (boolean salaryOption : salaryOptions) {
+                LoanOfferDto offer = loanService.calculateLoan(
+                        request.getAmount(),
+                        request.getTerm(),
+                        insuranceOption,
+                        salaryOption
+                );
+
+                offers.add(offer);
+            }
+        }
+
+        offers.sort((l1, l2) -> l1.getTotalAmount().compareTo(l2.getTotalAmount()));
+
+        return offers;
     }
 
     @Override
     public CreditDto calculateCredit(ScoringDataDto request) {
+
         return null;
     }
 }
