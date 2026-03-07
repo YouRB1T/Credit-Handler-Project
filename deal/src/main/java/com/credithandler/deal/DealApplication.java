@@ -1,13 +1,13 @@
-package com.statement;
+package com.credithandler.deal;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class StatementApplication {
+public class DealApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(StatementApplication.class, args);
+        SpringApplication.run(DealApplication.class, args);
     }
 
 }

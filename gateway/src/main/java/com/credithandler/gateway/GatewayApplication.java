@@ -1,13 +1,13 @@
-package com.deal;
+package com.credithandler.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DealApplication {
+public class GatewayApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DealApplication.class, args);
+        SpringApplication.run(GatewayApplication.class, args);
     }
 
 }

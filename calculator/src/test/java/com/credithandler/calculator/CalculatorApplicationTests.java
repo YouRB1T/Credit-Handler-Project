@@ -1,4 +1,4 @@
-package com.calculator;
+package com.credithandler.calculator;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

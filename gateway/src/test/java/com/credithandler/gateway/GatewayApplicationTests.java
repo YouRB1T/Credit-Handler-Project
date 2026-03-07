@@ -1,10 +1,10 @@
-package com.dossier;
+package com.credithandler.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DossierApplicationTests {
+class GatewayApplicationTests {
 
     @Test
     void contextLoads() {
