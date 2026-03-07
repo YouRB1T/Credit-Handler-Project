@@ -31,7 +31,7 @@ public class CalculatorController {
     @PostMapping("/offers")
     @Operation(
             summary = "Список кредитных предложений",
-            description = "На основе данных заявки возвращает список доступных кредитных предложений"
+            description = "На основе данных заявки возвращает список доступных кредитных предложений, прескоринг"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно получены предложения",
@@ -39,9 +39,9 @@ public class CalculatorController {
             @ApiResponse(responseCode = "422", description = "Бизнес ошибка"),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
-    public ResponseEntity<List<LoanOfferDto>> countCreditLoans(@RequestBody LoanStatementRequestDto request) {
+    public ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(@RequestBody LoanStatementRequestDto request) {
         return ResponseEntity.ok(
-                service.countCreditLoans(request)
+                service.provisionLoanOffers(request)
         );
     }
 
