@@ -15,8 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CalculatorServiceImpl implements CalculatorService {
 
-    private final ScoreService scoreService;
-
     private final CalculateLoanService loanService;
     private final CalculateCreditService calculateCreditService;
 
@@ -48,7 +46,7 @@ public class CalculatorServiceImpl implements CalculatorService {
 
     @Override
     public CreditDto calculateCredit(ScoringDataDto request) {
-        scoreService.score(request);
+
         return calculateCreditService.calculateCredit(request);
     }
 }

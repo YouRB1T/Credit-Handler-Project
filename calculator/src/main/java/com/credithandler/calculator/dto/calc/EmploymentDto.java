@@ -34,11 +34,9 @@ public class EmploymentDto {
 
     @NotNull(message = "Общий стаж не может быть не заполненным")
     @Min(value = 0, message = "Общий стаж не может быть отрицательным")
-    @Max(value = 600, message = "Общий стаж не может превышать 600 месяцев (50 лет)")
     private Integer workExperienceTotal;
 
     @NotNull(message = "Текущий стаж не может быть не заполненным")
     @Min(value = 0, message = "Текущий стаж не может быть отрицательным")
-    @Max(value = 600, message = "Текущий стаж не может превышать 600 месяцев (50 лет)")
     private Integer workExperienceCurrent;
 }

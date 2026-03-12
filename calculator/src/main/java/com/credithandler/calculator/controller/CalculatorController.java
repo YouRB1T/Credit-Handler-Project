@@ -29,6 +29,7 @@ public class CalculatorController {
 
     private final CalculatorService service;
 
+    // TODO: можно ли указать в ApiResponse BusinessException в качестве аргумента
     @Operation(
             summary = "Список кредитных предложений",
             description = "На основе данных заявки возвращает список доступных кредитных предложений, прескоринг"

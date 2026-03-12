@@ -28,10 +28,6 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
                                                                      BigDecimal monthlyPayment,
                                                                      BigDecimal monthlyRate,
                                                                      Integer term) {
-
-        log.info("Creating payment schedule: amount={}, monthly={}, rate={}%, term={}",
-                totalAmount, monthlyPayment, monthlyRate, term);
-
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
         BigDecimal remainingDebt = amount;
@@ -65,11 +61,8 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
             schedule.add(element);
 
             date = date.plusMonths(1);
-
-            log.debug("Month {}: interest={}, debt={}, remaining={}",
-                    i, interestPayment, debtPayment, remainingDebt);
         }
-        //TODO: Нужна проверка на remainingDebt == 0
+        //TODO: Нужна ли проверка на remainingDebt == 0
         return schedule;
     }
 }

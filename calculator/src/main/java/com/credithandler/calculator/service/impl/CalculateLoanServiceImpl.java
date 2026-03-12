@@ -3,6 +3,7 @@ package com.credithandler.calculator.service.impl;
 import com.credithandler.calculator.dto.loan.LoanOfferDto;
 import com.credithandler.calculator.service.CalculateLoanService;
 import com.credithandler.calculator.service.CalculateMonthlyPayment;
+import com.credithandler.calculator.service.CalculateRateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,13 +18,7 @@ import java.math.RoundingMode;
 public class CalculateLoanServiceImpl implements CalculateLoanService {
 
     private final CalculateMonthlyPayment monthlyPaymentCalculator;
-
-    @Value("${loan.base-interest}")
-    private BigDecimal LOAN_INTEREST;
-    @Value("${loan.insurance-decrease}")
-    private BigDecimal IF_INSURANCE;
-    @Value("${loan.salary-decrease}")
-    private BigDecimal IF_SALARY;
+    private final CalculateRateService rateCalculator;
 
     //TODO: StatementId пока null, исправить позже
     /*
@@ -36,7 +31,7 @@ public class CalculateLoanServiceImpl implements CalculateLoanService {
     public LoanOfferDto calculateLoan(BigDecimal amount, Integer term, Boolean isInsuranceEnabled, Boolean isSalaryClient) {
 
         // Изначально идет как ежемесячная
-        BigDecimal finalRate = calculateRateForLoans(isInsuranceEnabled, isSalaryClient);
+        BigDecimal finalRate = rateCalculator.calculatePrescoringRate(isInsuranceEnabled, isSalaryClient);
 
         BigDecimal monthlyPayment = monthlyPaymentCalculator.monthlyPayment(amount, finalRate, term);
 
@@ -53,26 +48,5 @@ public class CalculateLoanServiceImpl implements CalculateLoanService {
                 isSalaryClient
 
         );
-    }
-
-    private BigDecimal calculateRateForLoans(Boolean isInsurance, Boolean isSalary) {
-        BigDecimal rate = LOAN_INTEREST;
-
-        if (isInsurance) {
-            rate = rate.subtract(IF_INSURANCE);
-            log.debug("Insurance discount applied: -{}%", IF_INSURANCE);
-        }
-
-        if (isSalary) {
-            rate = rate.subtract(IF_SALARY);
-            log.debug("Salary client discount applied: -{}%", IF_SALARY);
-        }
-
-        if (rate.compareTo(BigDecimal.ZERO) < 0) {
-            rate = BigDecimal.ZERO;
-            log.warn("Interest rate became negative, set to 0%");
-        }
-
-        return rate;
     }
 }
