@@ -2,22 +2,20 @@ package com.credithandler.calculator.service.impl;
 
 import com.credithandler.calculator.dto.loan.LoanOfferDto;
 import com.credithandler.calculator.service.CalculateLoanService;
-import com.credithandler.calculator.service.CalculateMonthlyPayment;
+import com.credithandler.calculator.service.CalculateMonthlyPaymentService;
 import com.credithandler.calculator.service.CalculateRateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CalculateLoanServiceImpl implements CalculateLoanService {
 
-    private final CalculateMonthlyPayment monthlyPaymentCalculator;
+    private final CalculateMonthlyPaymentService monthlyPaymentCalculator;
     private final CalculateRateService rateCalculator;
 
     //TODO: StatementId пока null, исправить позже

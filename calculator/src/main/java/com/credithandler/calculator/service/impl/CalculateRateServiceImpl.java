@@ -169,14 +169,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
             return newRate;
         }
 
-        switch (status) {
-            case SELF_EMPLOYED:
-                newRate = currentRate.add(SELF_EMPLOYED_INCREASE);
-                break;
-            case COMPANY_OWNER:
-                newRate = currentRate.add(COMPANY_OWNER_INCREASE);
-                break;
-        }
+        newRate = switch (status) {
+            case SELF_EMPLOYED -> currentRate.add(SELF_EMPLOYED_INCREASE);
+            case COMPANY_OWNER -> currentRate.add(COMPANY_OWNER_INCREASE);
+            default -> newRate;
+        };
 
         return newRate;
     }
@@ -189,14 +186,10 @@ public class CalculateRateServiceImpl implements CalculateRateService {
             return newRate;
         }
 
-        switch (position) {
-            case MIDDLE_MANAGER:
-                newRate = currentRate.subtract(MIDDLE_MANAGER_DECREASE);
-                break;
-            case TOP_MANAGER:
-                newRate = currentRate.subtract(TOP_MANAGER_DECREASE);
-                break;
-        }
+        newRate = switch (position) {
+            case MIDDLE_MANAGER -> currentRate.subtract(MIDDLE_MANAGER_DECREASE);
+            case TOP_MANAGER -> currentRate.subtract(TOP_MANAGER_DECREASE);
+        };
 
         return newRate;
     }
@@ -209,12 +202,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
             return newRate;
         }
 
-        switch (status) {
-            case MARRIED:
-                newRate = currentRate.subtract(MARRIED_DECREASE);
-            case DIVORCED:
-                newRate = currentRate.add(DIVORCED_INCREASE);
-        }
+        newRate = switch (status) {
+            case MARRIED -> currentRate.subtract(MARRIED_DECREASE);
+            case DIVORCED -> currentRate.add(DIVORCED_INCREASE);
+            case SINGLE -> currentRate.add(new BigDecimal(1));
+        };
 
         return newRate;
     }

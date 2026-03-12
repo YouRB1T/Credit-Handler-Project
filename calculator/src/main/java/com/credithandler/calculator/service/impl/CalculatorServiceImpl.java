@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -39,14 +40,13 @@ public class CalculatorServiceImpl implements CalculatorService {
             }
         }
 
-        offers.sort((l1, l2) -> l1.getTotalAmount().compareTo(l2.getTotalAmount()));
+        offers.sort(Comparator.comparing(LoanOfferDto::getTotalAmount));
 
         return offers;
     }
 
     @Override
     public CreditDto calculateCredit(ScoringDataDto request) {
-
         return calculateCreditService.calculateCredit(request);
     }
 }

@@ -1,13 +1,13 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.calculator.service.CalculateMonthlyPayment;
+import com.credithandler.calculator.service.CalculateMonthlyPaymentService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 @Service
-public class CalculateMonthlyPaymentImpl implements CalculateMonthlyPayment {
+public class CalculateMonthlyPaymentImpl implements CalculateMonthlyPaymentService {
     /**
      * Расчет аннуитетного платежа
      *
@@ -18,10 +18,6 @@ public class CalculateMonthlyPaymentImpl implements CalculateMonthlyPayment {
      * С - сумма кредита (amount)
      * ПС - месячная процентная ставка (annualRate) PS изначально считаем месячную процентную ставку в методе calculateFinalRate
      * n - кол-во месяцев (term)
-     * @param amount
-     * @param annualRate
-     * @param term
-     * @return
      */
     @Override
     public BigDecimal monthlyPayment(BigDecimal amount, BigDecimal annualRate, Integer term) {
