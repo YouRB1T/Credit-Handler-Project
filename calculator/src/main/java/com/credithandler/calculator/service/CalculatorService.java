@@ -8,6 +8,6 @@ import com.credithandler.calculator.dto.loan.LoanStatementRequestDto;
 import java.util.List;
 
 public interface CalculatorService {
-    List<LoanOfferDto> provisionLoanOffers(LoanStatementRequestDto request);
+    List<LoanOfferDto> calculatingOffers(LoanStatementRequestDto request);
     CreditDto calculateCredit(ScoringDataDto request);
 }

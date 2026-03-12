@@ -1,5 +1,5 @@
 package com.credithandler.calculator.model;
 
 public enum Gender {
-    MALE, FEMALE
+    MALE, FEMALE, NOT_BINARY
 }

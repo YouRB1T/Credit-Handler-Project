@@ -23,7 +23,6 @@ public class CalculateCreditServiceImpl implements CalculateCreditService {
     @Override
     public CreditDto calculateCredit(ScoringDataDto request) {
 
-        // TODO: На сколько замороченным делать сервис для подчсета процентов и ежемесячной ставки
         LoanOfferDto offer = calculateLoanService.calculateLoan(
                 request.getAmount(),
                 request.getTerm(),
