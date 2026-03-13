@@ -67,5 +67,4 @@ public class CalculatorController {
                 service.calculateCredit(request)
         );
     }
-
 }
