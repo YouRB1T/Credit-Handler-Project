@@ -24,20 +24,26 @@ public class CalculateCreditServiceImpl implements CalculateCreditService {
 
     @Override
     public CreditDto calculateCredit(ScoringDataDto request) {
+        log.info("Расчет параметров кредита: сумма {} руб., срок {} мес.",
+                request.getAmount(), request.getTerm());
 
         BigDecimal rate = calculateRateService.calculateScoringRate(request);
+        log.debug("Итоговая процентная ставка после скоринга: {}%", rate);
 
         BigDecimal monthlyPayment = calculateMonthlyPaymentService.monthlyPayment(
                 request.getAmount(), rate, request.getTerm()
         );
+        log.debug("Ежемесячный платеж: {} руб.", monthlyPayment);
 
         BigDecimal totalAmount = monthlyPayment.multiply(new BigDecimal(request.getTerm()));
+        log.debug("Общая сумма кредита: {} руб.", totalAmount);
 
         List<PaymentScheduleElementDto> schedule = paymentScheduleService.createLoanPaymentSchedule(
-               request.getAmount(), totalAmount, monthlyPayment, rate, request.getTerm()
+                request.getAmount(), totalAmount, monthlyPayment, rate, request.getTerm()
         );
+        log.debug("Сформирован график платежей: {} элементов", schedule.size());
 
-        return new CreditDto(
+        CreditDto credit = new CreditDto(
                 request.getAmount(),
                 request.getTerm(),
                 monthlyPayment,
@@ -47,5 +53,10 @@ public class CalculateCreditServiceImpl implements CalculateCreditService {
                 request.getIsSalaryClient(),
                 schedule
         );
+
+        log.info("Кредит рассчитан: ставка {}%, ежемесячный платеж {} руб., общая сумма {} руб.",
+                rate, monthlyPayment, totalAmount);
+
+        return credit;
     }
 }

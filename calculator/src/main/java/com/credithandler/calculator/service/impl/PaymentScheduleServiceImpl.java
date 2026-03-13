@@ -28,26 +28,39 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
                                                                      BigDecimal monthlyPayment,
                                                                      BigDecimal monthlyRate,
                                                                      Integer term) {
+        log.info("Формирование графика платежей: сумма кредита {} руб., срок {} мес., ежемесячный платеж {} руб.",
+                amount, term, monthlyPayment);
+        log.debug("Общая сумма с процентами: {} руб., месячная ставка: {}%",
+                totalAmount, monthlyRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
         BigDecimal remainingDebt = amount;
         LocalDate date = LocalDate.now().plusMonths(1);
 
+        log.debug("Начальный остаток долга: {} руб., дата первого платежа: {}", remainingDebt, date);
+
         for (int i = 1; i <= term; i++) {
+            log.debug("Расчет платежа №{}", i);
+
             BigDecimal interestPayment = remainingDebt
                     .multiply(monthlyRate)
                     .setScale(2, RoundingMode.HALF_UP);
+            log.debug("Проценты за месяц: {} руб.", interestPayment);
 
             BigDecimal debtPayment;
 
             if (i == term) {
                 debtPayment = remainingDebt;
+                log.debug("Последний месяц: погашение остатка долга {} руб.", debtPayment);
             } else {
                 debtPayment = monthlyPayment.subtract(interestPayment);
+                log.debug("Погашение основного долга: {} руб.", debtPayment);
             }
 
             remainingDebt = remainingDebt.subtract(debtPayment)
                     .setScale(2, RoundingMode.HALF_UP);
+            log.debug("Остаток долга после платежа: {} руб.", remainingDebt);
 
             PaymentScheduleElementDto element = new PaymentScheduleElementDto(
                     i,
@@ -59,10 +72,15 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
             );
 
             schedule.add(element);
+            log.trace("Добавлен элемент графика: {}", element);
 
             date = date.plusMonths(1);
+            log.debug("Следующая дата платежа: {}", date);
         }
-        //TODO: Нужна ли проверка на remainingDebt == 0
+
+        log.info("График платежей сформирован: {} элементов. Итоговый остаток: {} руб.",
+                schedule.size(), remainingDebt);
+
         return schedule;
     }
 }

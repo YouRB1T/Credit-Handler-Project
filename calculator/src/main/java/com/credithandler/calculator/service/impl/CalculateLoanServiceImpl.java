@@ -27,15 +27,20 @@ public class CalculateLoanServiceImpl implements CalculateLoanService {
      */
     @Override
     public LoanOfferDto calculateLoan(BigDecimal amount, Integer term, Boolean isInsuranceEnabled, Boolean isSalaryClient) {
+        log.info("Расчет кредитного предложения: сумма {} руб., срок {} мес., страхование {}, зарплатный клиент {}",
+                amount, term, isInsuranceEnabled, isSalaryClient);
 
         // Изначально идет как ежемесячная
         BigDecimal finalRate = rateCalculator.calculatePrescoringRate(isInsuranceEnabled, isSalaryClient);
+        log.debug("Итоговая процентная ставка: {}%", finalRate);
 
         BigDecimal monthlyPayment = monthlyPaymentCalculator.monthlyPayment(amount, finalRate, term);
+        log.debug("Ежемесячный платеж: {} руб.", monthlyPayment);
 
         BigDecimal totalAmount = monthlyPayment.multiply(new BigDecimal(term));
+        log.debug("Общая сумма кредита: {} руб.", totalAmount);
 
-        return new LoanOfferDto(
+        LoanOfferDto result = new LoanOfferDto(
                 null,
                 amount,
                 totalAmount,
@@ -44,7 +49,11 @@ public class CalculateLoanServiceImpl implements CalculateLoanService {
                 finalRate,
                 isInsuranceEnabled,
                 isSalaryClient
-
         );
+
+        log.info("Кредитное предложение сформировано: ставка {}%, ежемесячный платеж {} руб., общая сумма {} руб.",
+                finalRate, monthlyPayment, totalAmount);
+
+        return result;
     }
 }

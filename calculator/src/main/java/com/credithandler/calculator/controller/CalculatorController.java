@@ -4,6 +4,7 @@ import com.credithandler.calculator.dto.calc.CreditDto;
 import com.credithandler.calculator.dto.calc.ScoringDataDto;
 import com.credithandler.calculator.dto.loan.LoanOfferDto;
 import com.credithandler.calculator.dto.loan.LoanStatementRequestDto;
+import com.credithandler.calculator.exception.BusinessException;
 import com.credithandler.calculator.service.CalculatorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +30,6 @@ public class CalculatorController {
 
     private final CalculatorService service;
 
-    // TODO: можно ли указать в ApiResponse BusinessException в качестве аргумента
     @Operation(
             summary = "Список кредитных предложений",
             description = "На основе данных заявки возвращает список доступных кредитных предложений, прескоринг"
@@ -37,7 +37,8 @@ public class CalculatorController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно получены предложения",
                     content = @Content(schema = @Schema(implementation = LoanOfferDto.class))),
-            @ApiResponse(responseCode = "422", description = "Бизнес ошибка"),
+            @ApiResponse(responseCode = "422", description = "Бизнес ошибка",
+                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/offers")
@@ -54,8 +55,9 @@ public class CalculatorController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно создано кредитное предложение",
-                    content = @Content(schema = @Schema(implementation = LoanOfferDto.class))),
-            @ApiResponse(responseCode = "422", description = "Бизнес ошибка"),
+                    content = @Content(schema = @Schema(implementation = CreditDto.class))),
+            @ApiResponse(responseCode = "422", description = "Бизнес ошибка",
+                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/calc")
