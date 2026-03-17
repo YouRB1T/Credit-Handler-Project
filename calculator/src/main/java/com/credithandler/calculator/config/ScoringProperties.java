@@ -1,67 +1,66 @@
 package com.credithandler.calculator.config;
 
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "scoring")
 public class ScoringProperties {
 
-    // scoring.salary.max-multiple
+    @Value("${scoring.salary.max-multiple}")
     private Integer maxSalaryMultiple;
 
-    // scoring.age.min
+    @Value("${scoring.age.min}")
     private Integer minAge;
 
-    // scoring.age.max
+    @Value("${scoring.age.max}")
     private Integer maxAge;
 
-    // scoring.experience.total-min
+    @Value("${scoring.experience.total-min}")
     private Integer minTotalWorkExperience;
 
-    // scoring.experience.current-min
+    @Value("${scoring.experience.current-min}")
     private Integer minCurrentWorkExperience;
 
-    // scoring.employment.self-employed-increase
+    @Value("${scoring.employment.self-employed-increase}")
     private BigDecimal selfEmployedIncrease;
 
-    // scoring.employment.company-owner-increase
+    @Value("${scoring.employment.company-owner-increase}")
     private BigDecimal companyOwnerIncrease;
 
-    // scoring.position.middle-manager-decrease
+    @Value("${scoring.position.middle-manager-decrease}")
     private BigDecimal middleManagerDecrease;
 
-    // scoring.position.top-manager-decrease
+    @Value("${scoring.position.top-manager-decrease}")
     private BigDecimal topManagerDecrease;
 
-    // scoring.marital.married-decrease
+    @Value("${scoring.marital.married-decrease}")
     private BigDecimal marriedDecrease;
 
-    // scoring.marital.divorced-increase
+    @Value("${scoring.marital.divorced-increase}")
     private BigDecimal divorcedIncrease;
 
-    // scoring.gender.female.age-min
+    @Value("${scoring.gender.female.age-min}")
     private Integer femaleAgeMin;
 
-    // scoring.gender.female.age-max
+    @Value("${scoring.gender.female.age-max}")
     private Integer femaleAgeMax;
 
-    // scoring.gender.female.decrease
+    @Value("${scoring.gender.female.decrease}")
     private BigDecimal femaleDecrease;
 
-    // scoring.gender.male.age-min
+    @Value("${scoring.gender.female.age-min}")
     private Integer maleAgeMin;
 
-    // scoring.gender.male.age-max
+    @Value("${scoring.gender.male.age-max}")
     private Integer maleAgeMax;
 
-    // scoring.gender.male.decrease
+    @Value("${scoring.gender.male.decrease}")
     private BigDecimal maleDecrease;
 
-    // scoring.gender.non-binary.increase
+    @Value("${scoring.gender.non-binary.increase}")
     private BigDecimal nonBinaryIncrease;
 }

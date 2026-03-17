@@ -12,16 +12,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController("/calculator")
+@RestController
+@RequestMapping("/calculator")
 @RequiredArgsConstructor
 @Tag(name = "Сервис вычисления кредитной заявки и возможных предложений",
         description = "Сервис предоставляет возможность вычисления кредитного предложения на основе данных скоринга," +
@@ -42,8 +45,7 @@ public class CalculatorController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/offers")
-    @Validated
-    public ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(@RequestBody LoanStatementRequestDto request) {
+    public ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(@Valid @RequestBody LoanStatementRequestDto request) {
         return ResponseEntity.ok(
                 service.calculatingOffers(request)
         );
@@ -61,8 +63,7 @@ public class CalculatorController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/calc")
-    @Validated
-    public ResponseEntity<CreditDto> calculateCredit(@RequestBody ScoringDataDto request) {
+    public ResponseEntity<CreditDto> calculateCredit(@Valid @RequestBody ScoringDataDto request) {
         return ResponseEntity.ok(
                 service.calculateCredit(request)
         );

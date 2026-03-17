@@ -137,7 +137,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         ScoringProperties props = scoringProperties;
 
         if (status == null) {
-            return currentRate;
+            log.warn("Статус занятости не указан");
+            throw BusinessException.of(
+                    "Статус занятости",
+                    "Статус занятости не может быть null"
+            );
         }
 
         BigDecimal newRate = switch (status) {
@@ -163,7 +167,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         ScoringProperties props = scoringProperties;
 
         if (position == null) {
-            return currentRate;
+            log.warn("Должность не указана");
+            throw BusinessException.of(
+                    "Должность",
+                    "Должность не может быть null"
+            );
         }
 
         BigDecimal newRate = switch (position) {
@@ -177,6 +185,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
                         props.getTopManagerDecrease());
                 yield currentRate.subtract(props.getTopManagerDecrease());
             }
+            default -> currentRate;
         };
 
         log.debug("Должность: {}, ставка после учета: {}%", position, newRate);
@@ -188,7 +197,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         ScoringProperties props = scoringProperties;
 
         if (status == null) {
-            return currentRate;
+            log.warn("Семейное положение не указано");
+            throw BusinessException.of(
+                    "Семейное положение",
+                    "Семейное положение не может быть null"
+            );
         }
 
         BigDecimal newRate = switch (status) {
@@ -204,6 +217,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
                 log.debug("Применено повышение ставки для холостых/незамужних: +1%");
                 yield currentRate.add(new BigDecimal("1"));
             }
+            default -> currentRate;
         };
 
         log.debug("Семейное положение: {}, ставка после учета: {}%", status, newRate);
@@ -259,9 +273,6 @@ public class CalculateRateServiceImpl implements CalculateRateService {
     }
 
     private int calculateAge(LocalDate birthdate) {
-        if (birthdate == null) {
-            return 0;
-        }
         return Period.between(birthdate, LocalDate.now()).getYears();
     }
 }

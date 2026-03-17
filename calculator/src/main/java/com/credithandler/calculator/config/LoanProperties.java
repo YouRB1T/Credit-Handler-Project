@@ -1,22 +1,21 @@
 package com.credithandler.calculator.config;
 
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "loan")
 public class LoanProperties {
 
-    // loan.base-interest
+    @Value("${loan.base-interest}")
     private BigDecimal baseInterest;
 
-    // loan.insurance-decrease
+    @Value("${loan.insurance-decrease}")
     private BigDecimal insuranceDecrease;
 
-    // loan.salary-decrease
+    @Value("${loan.salary-decrease}")
     private BigDecimal salaryDecrease;
 }

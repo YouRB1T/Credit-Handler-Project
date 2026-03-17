@@ -18,12 +18,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class LoanStatementRequestDto {
 
-    @NotNull(message = "Сумма кредите не может быть нулевой")
+    @NotNull(message = "Сумма кредите не может быть незаполненной")
     @DecimalMin(value = "20000.00", message = "Сумма кредита должна быть больше 20000")
     @Digits(integer = 10, fraction = 2, message = "Число должно быть действительным, не больше 99,999,999.99 и до 2 дробной части")
     private BigDecimal amount;
 
-    @NotNull(message = "Срок кредита не может быть нулем")
+    @NotNull(message = "Срок кредита не может быть незаполненным")
     @Min(value = 6, message = "Срок кредита не может быть меньше 6 месяцев")
     private Integer term;
 
@@ -48,7 +48,7 @@ public class LoanStatementRequestDto {
     )
     private String email;
 
-    @NotNull(message = "День рождения не может быть пустым")
+    @NotNull(message = "День рождения не может быть незаполненным")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd")
     //https://www.baeldung.com/spring-mvc-custom-validator
