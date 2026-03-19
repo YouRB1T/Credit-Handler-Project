@@ -1,12 +1,15 @@
 package com.credithandler.calculator.service.impl;
 
+import com.credithandler.api.controller.calculator.dto.model.EmploymentPosition;
+import com.credithandler.api.controller.calculator.dto.model.EmploymentStatus;
+import com.credithandler.api.controller.calculator.dto.model.Gender;
+import com.credithandler.api.controller.calculator.dto.model.MaritalStatus;
 import com.credithandler.calculator.config.ErrorProperties;
 import com.credithandler.calculator.config.LoanProperties;
 import com.credithandler.calculator.config.ScoringProperties;
-import com.credithandler.calculator.api.dto.calc.EmploymentDto;
-import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
-import com.credithandler.calculator.exception.BusinessException;
-import com.credithandler.calculator.model.*;
+import com.credithandler.api.controller.calculator.dto.calc.EmploymentDto;
+import com.credithandler.api.controller.calculator.dto.calc.ScoringDataDto;
+import com.credithandler.api.exception.BusinessException;
 import com.credithandler.calculator.service.CalculateRateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

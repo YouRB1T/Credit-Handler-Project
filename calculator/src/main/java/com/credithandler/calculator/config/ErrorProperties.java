@@ -13,18 +13,6 @@ public class ErrorProperties {
     private Integer validationCode;
     private Integer serverCode;
 
-    private String responseTimestamp;
-    private String responseStatus;
-    private String responseError;
-    private String responseMessage;
-    private String responseField;
-    private String responseErrors;
-
-    private String businessErrorTitle;
-    private String validationErrorTitle;
-    private String serverErrorTitle;
-    private String serverErrorMessage;
-
     private String unemployedMessage;
     private String loanAmountMessage;
     private String ageMessage;

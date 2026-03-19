@@ -1,9 +1,9 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.calculator.api.dto.calc.CreditDto;
-import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
-import com.credithandler.calculator.api.dto.loan.LoanOfferDto;
-import com.credithandler.calculator.api.dto.loan.LoanStatementRequestDto;
+import com.credithandler.api.controller.calculator.dto.calc.CreditDto;
+import com.credithandler.api.controller.calculator.dto.calc.ScoringDataDto;
+import com.credithandler.api.controller.calculator.dto.loan.LoanOfferDto;
+import com.credithandler.api.controller.calculator.dto.loan.LoanStatementRequestDto;
 import com.credithandler.calculator.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

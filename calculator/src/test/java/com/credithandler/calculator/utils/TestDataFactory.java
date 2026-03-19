@@ -1,12 +1,12 @@
 package com.credithandler.calculator.utils;
 
-import com.credithandler.calculator.api.dto.calc.EmploymentDto;
-import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
-import com.credithandler.calculator.api.dto.loan.LoanStatementRequestDto;
-import com.credithandler.calculator.model.EmploymentPosition;
-import com.credithandler.calculator.model.EmploymentStatus;
-import com.credithandler.calculator.model.Gender;
-import com.credithandler.calculator.model.MaritalStatus;
+import com.credithandler.api.controller.calculator.dto.calc.EmploymentDto;
+import com.credithandler.api.controller.calculator.dto.calc.ScoringDataDto;
+import com.credithandler.api.controller.calculator.dto.loan.LoanStatementRequestDto;
+import com.credithandler.api.controller.calculator.dto.model.EmploymentPosition;
+import com.credithandler.api.controller.calculator.dto.model.EmploymentStatus;
+import com.credithandler.api.controller.calculator.dto.model.Gender;
+import com.credithandler.api.controller.calculator.dto.model.MaritalStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

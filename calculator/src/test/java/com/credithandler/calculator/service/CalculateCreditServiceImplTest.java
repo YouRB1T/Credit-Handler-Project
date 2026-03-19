@@ -1,8 +1,8 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.calculator.api.dto.calc.CreditDto;
-import com.credithandler.calculator.api.dto.calc.PaymentScheduleElementDto;
-import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
+import com.credithandler.api.controller.calculator.dto.calc.CreditDto;
+import com.credithandler.api.controller.calculator.dto.calc.PaymentScheduleElementDto;
+import com.credithandler.api.controller.calculator.dto.calc.ScoringDataDto;
 import com.credithandler.calculator.service.impl.CalculateCreditServiceImpl;
 import com.credithandler.calculator.service.impl.PaymentScheduleServiceImpl;
 import com.credithandler.calculator.utils.TestDataFactory;

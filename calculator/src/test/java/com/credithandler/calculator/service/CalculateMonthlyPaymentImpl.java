@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.calculator.exception.BusinessException;
+import com.credithandler.api.exception.BusinessException;
 import com.credithandler.calculator.service.impl.CalculateMonthlyPaymentImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
