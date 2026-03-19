@@ -1,8 +1,8 @@
 package com.credithandler.calculator.utils;
 
-import com.credithandler.calculator.dto.calc.EmploymentDto;
-import com.credithandler.calculator.dto.calc.ScoringDataDto;
-import com.credithandler.calculator.dto.loan.LoanStatementRequestDto;
+import com.credithandler.calculator.api.dto.calc.EmploymentDto;
+import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
+import com.credithandler.calculator.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.calculator.model.EmploymentPosition;
 import com.credithandler.calculator.model.EmploymentStatus;
 import com.credithandler.calculator.model.Gender;

@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.calculator.dto.calc.PaymentScheduleElementDto;
+import com.credithandler.calculator.api.dto.calc.PaymentScheduleElementDto;
 import com.credithandler.calculator.service.PaymentScheduleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,10 @@ import java.util.List;
 @Slf4j
 public class PaymentScheduleServiceImpl implements PaymentScheduleService {
 
+    private static final int RESULT_SCALE = 2;
+    private static final int ONE_MONTH = 1;
+    private static final int FIRST_PAYMENT_NUMBER = 1;
+
     /*
     Параметры для подсчета
     общая сумма месячного платежа (total payment)
@@ -28,24 +32,21 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
                                                                      BigDecimal monthlyPayment,
                                                                      BigDecimal monthlyRate,
                                                                      Integer term) {
-        log.info("Формирование графика платежей: сумма кредита {} руб., срок {} мес., ежемесячный платеж {} руб.",
+        log.info(">> createLoanPaymentSchedule, amount: {}, term: {}, monthlyPayment: {}",
                 amount, term, monthlyPayment);
-        log.debug("Общая сумма с процентами: {} руб., месячная ставка: {}%",
-                totalAmount, monthlyRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
 
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
         BigDecimal remainingDebt = amount;
-        LocalDate date = LocalDate.now().plusMonths(1);
+        LocalDate date = LocalDate.now().plusMonths(ONE_MONTH);
 
         log.debug("Начальный остаток долга: {} руб., дата первого платежа: {}", remainingDebt, date);
 
-        for (int i = 1; i <= term; i++) {
+        for (int i = FIRST_PAYMENT_NUMBER; i <= term; i++) {
             log.debug("Расчет платежа №{}", i);
 
             BigDecimal interestPayment = remainingDebt
-                    .multiply(monthlyRate)
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .multiply(monthlyRate);
             log.debug("Проценты за месяц: {} руб.", interestPayment);
 
             BigDecimal debtPayment;
@@ -58,27 +59,26 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
                 log.debug("Погашение основного долга: {} руб.", debtPayment);
             }
 
-            remainingDebt = remainingDebt.subtract(debtPayment)
-                    .setScale(2, RoundingMode.HALF_UP);
+            remainingDebt = remainingDebt.subtract(debtPayment);
             log.debug("Остаток долга после платежа: {} руб.", remainingDebt);
 
             PaymentScheduleElementDto element = new PaymentScheduleElementDto(
                     i,
                     date,
-                    monthlyPayment,
-                    interestPayment,
-                    debtPayment.setScale(2, RoundingMode.HALF_UP),
-                    remainingDebt
+                    monthlyPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP),
+                    interestPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP),
+                    debtPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP),
+                    remainingDebt.setScale(RESULT_SCALE, RoundingMode.HALF_UP)
             );
 
             schedule.add(element);
             log.trace("Добавлен элемент графика: {}", element);
 
-            date = date.plusMonths(1);
+            date = date.plusMonths(ONE_MONTH);
             log.debug("Следующая дата платежа: {}", date);
         }
 
-        log.info("График платежей сформирован: {} элементов. Итоговый остаток: {} руб.",
+        log.info("<< createLoanPaymentSchedule, schedule size: {}, final remaining debt: {} руб.",
                 schedule.size(), remainingDebt);
 
         return schedule;

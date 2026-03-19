@@ -1,9 +1,10 @@
 package com.credithandler.calculator.service;
 
+import com.credithandler.calculator.config.ErrorProperties;
 import com.credithandler.calculator.config.LoanProperties;
 import com.credithandler.calculator.config.ScoringProperties;
-import com.credithandler.calculator.dto.calc.EmploymentDto;
-import com.credithandler.calculator.dto.calc.ScoringDataDto;
+import com.credithandler.calculator.api.dto.calc.EmploymentDto;
+import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
 import com.credithandler.calculator.exception.BusinessException;
 import com.credithandler.calculator.model.*;
 import com.credithandler.calculator.service.impl.CalculateRateServiceImpl;
@@ -31,6 +32,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @TestPropertySource(locations = "classpath:application.properties")
 @DisplayName("Тестирование CalculateRateServiceImpl")
 class CalculateRateServiceImplTest {
+
+    @Autowired
+    private ErrorProperties errorProperties;
 
     @Autowired
     private LoanProperties loanProperties;
@@ -90,13 +94,15 @@ class CalculateRateServiceImplTest {
     @DisplayName("ДУстановка ставки в 0% если она стала отрицательной")
     void calculatePrescoringRate_shouldSetZeroRateWhenNegative() {
 
+        ErrorProperties errorProperties = new ErrorProperties();
+
         LoanProperties negativeProps = new LoanProperties();
         negativeProps.setBaseInterest(new BigDecimal("5.0"));
         negativeProps.setInsuranceDecrease(new BigDecimal("10.0"));
         negativeProps.setSalaryDecrease(new BigDecimal("5.0"));
 
         CalculateRateServiceImpl serviceWithNegative =
-                new CalculateRateServiceImpl(negativeProps, scoringProperties);
+                new CalculateRateServiceImpl(negativeProps, scoringProperties, errorProperties);
 
         BigDecimal result = serviceWithNegative.calculatePrescoringRate(true, true);
 
@@ -595,7 +601,7 @@ class CalculateRateServiceImplTest {
         smallBaseProps.setSalaryDecrease(loanProperties.getSalaryDecrease());
 
         CalculateRateServiceImpl serviceWithSmallBase =
-                new CalculateRateServiceImpl(smallBaseProps, scoringProperties);
+                new CalculateRateServiceImpl(smallBaseProps, scoringProperties, errorProperties);
 
         BigDecimal result = serviceWithSmallBase.calculateScoringRate(data);
 

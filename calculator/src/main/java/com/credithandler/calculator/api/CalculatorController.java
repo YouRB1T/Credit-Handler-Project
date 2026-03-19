@@ -1,11 +1,10 @@
-package com.credithandler.calculator.controller;
+package com.credithandler.calculator.api;
 
-import com.credithandler.calculator.dto.calc.CreditDto;
-import com.credithandler.calculator.dto.calc.ScoringDataDto;
-import com.credithandler.calculator.dto.loan.LoanOfferDto;
-import com.credithandler.calculator.dto.loan.LoanStatementRequestDto;
+import com.credithandler.calculator.api.dto.calc.CreditDto;
+import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
+import com.credithandler.calculator.api.dto.loan.LoanOfferDto;
+import com.credithandler.calculator.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.calculator.exception.BusinessException;
-import com.credithandler.calculator.service.CalculatorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,26 +12,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
 @RequestMapping("/calculator")
-@RequiredArgsConstructor
 @Tag(name = "Сервис вычисления кредитной заявки и возможных предложений",
         description = "Сервис предоставляет возможность вычисления кредитного предложения на основе данных скоринга," +
                 "а также предоставление нескольких кредитных предложений на основе данных клиента")
-public class CalculatorController {
+public interface CalculatorController {
 
-    private final CalculatorService service;
-
+    @PostMapping("/offers")
     @Operation(
             summary = "Список кредитных предложений",
             description = "На основе данных заявки возвращает список доступных кредитных предложений, прескоринг"
@@ -44,13 +37,9 @@ public class CalculatorController {
                     content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
-    @PostMapping("/offers")
-    public ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(@Valid @RequestBody LoanStatementRequestDto request) {
-        return ResponseEntity.ok(
-                service.calculatingOffers(request)
-        );
-    }
+    ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(LoanStatementRequestDto request);
 
+    @PostMapping("/calc")
     @Operation(
             summary = "Вычисление кредитной заявки",
             description = "На основе данных происходит из валидация, скоринг и вычисление кредитного предложения"
@@ -62,10 +51,5 @@ public class CalculatorController {
                     content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
-    @PostMapping("/calc")
-    public ResponseEntity<CreditDto> calculateCredit(@Valid @RequestBody ScoringDataDto request) {
-        return ResponseEntity.ok(
-                service.calculateCredit(request)
-        );
-    }
+    ResponseEntity<CreditDto> calculateCredit(@Valid @RequestBody ScoringDataDto request);
 }

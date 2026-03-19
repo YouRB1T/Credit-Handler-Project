@@ -1,8 +1,8 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.calculator.dto.calc.CreditDto;
-import com.credithandler.calculator.dto.calc.PaymentScheduleElementDto;
-import com.credithandler.calculator.dto.calc.ScoringDataDto;
+import com.credithandler.calculator.api.dto.calc.CreditDto;
+import com.credithandler.calculator.api.dto.calc.PaymentScheduleElementDto;
+import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
 import com.credithandler.calculator.service.CalculateCreditService;
 import com.credithandler.calculator.service.CalculateMonthlyPaymentService;
 import com.credithandler.calculator.service.CalculateRateService;
@@ -24,8 +24,7 @@ public class CalculateCreditServiceImpl implements CalculateCreditService {
 
     @Override
     public CreditDto calculateCredit(ScoringDataDto request) {
-        log.info("Расчет параметров кредита: сумма {} руб., срок {} мес.",
-                request.getAmount(), request.getTerm());
+        log.info(">> calculateCredit, request: {}", request);
 
         BigDecimal rate = calculateRateService.calculateScoringRate(request);
         log.debug("Итоговая процентная ставка после скоринга: {}%", rate);
@@ -43,7 +42,7 @@ public class CalculateCreditServiceImpl implements CalculateCreditService {
         );
         log.debug("Сформирован график платежей: {} элементов", schedule.size());
 
-        CreditDto credit = new CreditDto(
+        CreditDto creditDto = new CreditDto(
                 request.getAmount(),
                 request.getTerm(),
                 monthlyPayment,
@@ -54,9 +53,7 @@ public class CalculateCreditServiceImpl implements CalculateCreditService {
                 schedule
         );
 
-        log.info("Кредит рассчитан: ставка {}%, ежемесячный платеж {} руб., общая сумма {} руб.",
-                rate, monthlyPayment, totalAmount);
-
-        return credit;
+        log.info("<< calculateCredit, creditDto: {}", creditDto);
+        return creditDto;
     }
 }

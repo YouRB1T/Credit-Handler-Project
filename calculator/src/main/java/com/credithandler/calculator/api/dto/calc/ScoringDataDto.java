@@ -1,4 +1,4 @@
-package com.credithandler.calculator.dto.calc;
+package com.credithandler.calculator.api.dto.calc;
 
 import com.credithandler.calculator.annotation.AdultAge;
 import com.credithandler.calculator.model.Gender;
@@ -6,15 +6,15 @@ import com.credithandler.calculator.model.MaritalStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class ScoringDataDto {

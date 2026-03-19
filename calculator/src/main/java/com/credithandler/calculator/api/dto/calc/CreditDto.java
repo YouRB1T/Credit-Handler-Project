@@ -1,12 +1,13 @@
-package com.credithandler.calculator.dto.calc;
+package com.credithandler.calculator.api.dto.calc;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 public class CreditDto {
     private BigDecimal amount;

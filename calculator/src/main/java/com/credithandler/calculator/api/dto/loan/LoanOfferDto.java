@@ -1,12 +1,13 @@
-package com.credithandler.calculator.dto.loan;
+package com.credithandler.calculator.api.dto.loan;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 public class LoanOfferDto {
     private UUID statementId;

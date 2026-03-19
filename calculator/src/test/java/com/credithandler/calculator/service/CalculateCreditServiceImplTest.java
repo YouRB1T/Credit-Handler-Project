@@ -1,8 +1,8 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.calculator.dto.calc.CreditDto;
-import com.credithandler.calculator.dto.calc.PaymentScheduleElementDto;
-import com.credithandler.calculator.dto.calc.ScoringDataDto;
+import com.credithandler.calculator.api.dto.calc.CreditDto;
+import com.credithandler.calculator.api.dto.calc.PaymentScheduleElementDto;
+import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
 import com.credithandler.calculator.service.impl.CalculateCreditServiceImpl;
 import com.credithandler.calculator.service.impl.PaymentScheduleServiceImpl;
 import com.credithandler.calculator.utils.TestDataFactory;
@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;

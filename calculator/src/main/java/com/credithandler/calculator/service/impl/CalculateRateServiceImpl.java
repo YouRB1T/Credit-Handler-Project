@@ -1,9 +1,10 @@
 package com.credithandler.calculator.service.impl;
 
+import com.credithandler.calculator.config.ErrorProperties;
 import com.credithandler.calculator.config.LoanProperties;
 import com.credithandler.calculator.config.ScoringProperties;
-import com.credithandler.calculator.dto.calc.EmploymentDto;
-import com.credithandler.calculator.dto.calc.ScoringDataDto;
+import com.credithandler.calculator.api.dto.calc.EmploymentDto;
+import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
 import com.credithandler.calculator.exception.BusinessException;
 import com.credithandler.calculator.model.*;
 import com.credithandler.calculator.service.CalculateRateService;
@@ -23,11 +24,15 @@ public class CalculateRateServiceImpl implements CalculateRateService {
 
     private final LoanProperties loanProperties;
     private final ScoringProperties scoringProperties;
+    private final ErrorProperties errorProperties;
+
+    private static final int RATE_SCALE = 2;
+    private static final BigDecimal TWELVE = new BigDecimal("12");
+    private static final int MIN_RATE = 0;
 
     @Override
     public BigDecimal calculatePrescoringRate(Boolean isInsurance, Boolean isSalary) {
-        log.info("Расчет ставки для прескоринга: страхование {}, зарплатный клиент {}",
-                isInsurance, isSalary);
+        log.info(">> calculatePrescoringRate, isInsurance: {}, isSalary: {}", isInsurance, isSalary);
 
         BigDecimal rate = loanProperties.getBaseInterest();
         log.debug("Базовая ставка: {}%", rate);
@@ -43,15 +48,14 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         }
 
         rate = ensureNonNegativeRate(rate);
-        log.info("Итоговая ставка прескоринга: {}%", rate);
 
+        log.info("<< calculatePrescoringRate, result: {}%", rate);
         return rate;
     }
 
     @Override
     public BigDecimal calculateScoringRate(ScoringDataDto scoringData) {
-        log.info("Начало скоринга для клиента: пол {}, возраст {} лет",
-                scoringData.getGender(), calculateAge(scoringData.getBirthdate()));
+        log.info(">> calculateScoringRate, scoringData: {}", scoringData);
 
         instantRejection(scoringData);
 
@@ -67,9 +71,9 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         rate = countOfGenderAndAge(scoringData, rate);
         rate = ensureNonNegativeRate(rate);
 
-        BigDecimal finalRate = rate.setScale(2, RoundingMode.HALF_UP);
-        log.info("Скоринг завершен. Итоговая ставка: {}%", finalRate);
+        BigDecimal finalRate = rate.setScale(RATE_SCALE, RoundingMode.HALF_UP);
 
+        log.info("<< calculateScoringRate, result: {}%", finalRate);
         return finalRate;
     }
 
@@ -80,53 +84,49 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         log.debug("Проверка критериев для мгновенного отказа");
 
         if (employment.getEmploymentStatus() == EmploymentStatus.UNEMPLOYED) {
-            log.warn("Отказ: клиент безработный");
+            log.warn("Отказ: {}", errorProperties.getLogEmploymentStatus());
             throw BusinessException.of(
-                    "Статус занятости",
-                    "Клиент безработный - кредит не может быть выдан"
+                    errorProperties.getLogEmploymentStatus(),
+                    errorProperties.getUnemployedMessage()
             );
         }
 
-        BigDecimal annualSalary = employment.getSalary().multiply(new BigDecimal("12"));
+        BigDecimal annualSalary = employment.getSalary().multiply(TWELVE);
         BigDecimal maxAllowedLoan = annualSalary.multiply(new BigDecimal(props.getMaxSalaryMultiple()));
 
         if (request.getAmount().compareTo(maxAllowedLoan) > 0) {
-            log.warn("Отказ: сумма кредита {} превышает допустимую {}",
-                    request.getAmount(), maxAllowedLoan);
+            log.warn("Отказ: {}", errorProperties.getLogLoanAmount());
             throw BusinessException.of(
-                    "Сумма кредита",
-                    String.format("Сумма кредита (%.2f) превышает максимально допустимую на основе зарплаты (%.2f)",
+                    errorProperties.getLogLoanAmount(),
+                    String.format(errorProperties.getLoanAmountMessage() + " (%.2f > %.2f)",
                             request.getAmount(), maxAllowedLoan)
             );
         }
 
         int age = calculateAge(request.getBirthdate());
         if (age < props.getMinAge() || age > props.getMaxAge()) {
-            log.warn("Отказ: возраст {} вне допустимого диапазона [{}-{}]",
-                    age, props.getMinAge(), props.getMaxAge());
+            log.warn("Отказ: {}", errorProperties.getLogAge());
             throw BusinessException.of(
-                    "Возраст",
-                    String.format("Возраст клиента %d выходит за допустимые пределы [%d-%d]",
-                            age, props.getMinAge(), props.getMaxAge())
+                    errorProperties.getLogAge(),
+                    String.format(errorProperties.getAgeMessage() + " [%d-%d], текущий: %d",
+                            props.getMinAge(), props.getMaxAge(), age)
             );
         }
 
         if (employment.getWorkExperienceTotal() < props.getMinTotalWorkExperience()) {
-            log.warn("Отказ: общий стаж {} мес. меньше требуемого {} мес.",
-                    employment.getWorkExperienceTotal(), props.getMinTotalWorkExperience());
+            log.warn("Отказ: {}", errorProperties.getLogTotalExperience());
             throw BusinessException.of(
-                    "Общий стаж работы",
-                    String.format("Общий стаж %d месяцев меньше требуемого %d месяцев",
+                    errorProperties.getLogTotalExperience(),
+                    String.format(errorProperties.getTotalExperienceMessage() + " %d < %d",
                             employment.getWorkExperienceTotal(), props.getMinTotalWorkExperience())
             );
         }
 
         if (employment.getWorkExperienceCurrent() < props.getMinCurrentWorkExperience()) {
-            log.warn("Отказ: текущий стаж {} мес. меньше требуемого {} мес.",
-                    employment.getWorkExperienceCurrent(), props.getMinCurrentWorkExperience());
+            log.warn("Отказ: {}", errorProperties.getLogCurrentExperience());
             throw BusinessException.of(
-                    "Текущий стаж работы",
-                    String.format("Текущий стаж %d месяцев меньше требуемого %d месяцев",
+                    errorProperties.getLogCurrentExperience(),
+                    String.format(errorProperties.getCurrentExperienceMessage() + " %d < %d",
                             employment.getWorkExperienceCurrent(), props.getMinCurrentWorkExperience())
             );
         }
@@ -136,23 +136,13 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         EmploymentStatus status = request.getEmployment().getEmploymentStatus();
         ScoringProperties props = scoringProperties;
 
-        if (status == null) {
-            log.warn("Статус занятости не указан");
-            throw BusinessException.of(
-                    "Статус занятости",
-                    "Статус занятости не может быть null"
-            );
-        }
-
         BigDecimal newRate = switch (status) {
             case SELF_EMPLOYED -> {
-                log.debug("Применено повышение ставки для самозанятого: +{}%",
-                        props.getSelfEmployedIncrease());
+                log.debug(errorProperties.getLogSelfEmployed(), props.getSelfEmployedIncrease());
                 yield currentRate.add(props.getSelfEmployedIncrease());
             }
             case COMPANY_OWNER -> {
-                log.debug("Применено повышение ставки для владельца бизнеса: +{}%",
-                        props.getCompanyOwnerIncrease());
+                log.debug(errorProperties.getLogCompanyOwner(), props.getCompanyOwnerIncrease());
                 yield currentRate.add(props.getCompanyOwnerIncrease());
             }
             default -> currentRate;
@@ -166,23 +156,13 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         EmploymentPosition position = request.getEmployment().getPosition();
         ScoringProperties props = scoringProperties;
 
-        if (position == null) {
-            log.warn("Должность не указана");
-            throw BusinessException.of(
-                    "Должность",
-                    "Должность не может быть null"
-            );
-        }
-
         BigDecimal newRate = switch (position) {
             case MIDDLE_MANAGER -> {
-                log.debug("Применена скидка для руководителя среднего звена: -{}%",
-                        props.getMiddleManagerDecrease());
+                log.debug(errorProperties.getLogMiddleManager(), props.getMiddleManagerDecrease());
                 yield currentRate.subtract(props.getMiddleManagerDecrease());
             }
             case TOP_MANAGER -> {
-                log.debug("Применена скидка для топ-менеджера: -{}%",
-                        props.getTopManagerDecrease());
+                log.debug(errorProperties.getLogTopManager(), props.getTopManagerDecrease());
                 yield currentRate.subtract(props.getTopManagerDecrease());
             }
             default -> currentRate;
@@ -196,26 +176,14 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         MaritalStatus status = request.getMaritalStatus();
         ScoringProperties props = scoringProperties;
 
-        if (status == null) {
-            log.warn("Семейное положение не указано");
-            throw BusinessException.of(
-                    "Семейное положение",
-                    "Семейное положение не может быть null"
-            );
-        }
-
         BigDecimal newRate = switch (status) {
             case MARRIED -> {
-                log.debug("Применена скидка для женатых/замужем: -{}%", props.getMarriedDecrease());
+                log.debug(errorProperties.getLogMarried(), props.getMarriedDecrease());
                 yield currentRate.subtract(props.getMarriedDecrease());
             }
             case DIVORCED -> {
-                log.debug("Применено повышение ставки для разведенных: +{}%", props.getDivorcedIncrease());
+                log.debug(errorProperties.getLogDivorced(), props.getDivorcedIncrease());
                 yield currentRate.add(props.getDivorcedIncrease());
-            }
-            case SINGLE -> {
-                log.debug("Применено повышение ставки для холостых/незамужних: +1%");
-                yield currentRate.add(new BigDecimal("1"));
             }
             default -> currentRate;
         };
@@ -229,17 +197,13 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         int age = calculateAge(request.getBirthdate());
         ScoringProperties props = scoringProperties;
 
-        if (gender == null) {
-            return currentRate;
-        }
-
         BigDecimal newRate = currentRate;
 
         switch (gender) {
             case FEMALE:
                 if (age >= props.getFemaleAgeMin() && age <= props.getFemaleAgeMax()) {
                     newRate = currentRate.subtract(props.getFemaleDecrease());
-                    log.debug("Применена скидка для женщины {}-{} лет: -{}%",
+                    log.debug(errorProperties.getLogFemaleDiscount(),
                             props.getFemaleAgeMin(), props.getFemaleAgeMax(),
                             props.getFemaleDecrease());
                 }
@@ -248,7 +212,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
             case MALE:
                 if (age >= props.getMaleAgeMin() && age <= props.getMaleAgeMax()) {
                     newRate = currentRate.subtract(props.getMaleDecrease());
-                    log.debug("Применена скидка для мужчины {}-{} лет: -{}%",
+                    log.debug(errorProperties.getLogMaleDiscount(),
                             props.getMaleAgeMin(), props.getMaleAgeMax(),
                             props.getMaleDecrease());
                 }
@@ -256,7 +220,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
 
             case NON_BINARY:
                 newRate = currentRate.add(props.getNonBinaryIncrease());
-                log.debug("Применено повышение ставки для небинарных: +{}%", props.getNonBinaryIncrease());
+                log.debug(errorProperties.getLogNonBinaryIncrease(), props.getNonBinaryIncrease());
                 break;
         }
 
@@ -265,7 +229,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
     }
 
     private BigDecimal ensureNonNegativeRate(BigDecimal rate) {
-        if (rate.compareTo(BigDecimal.ZERO) < 0) {
+        if (rate.compareTo(BigDecimal.ZERO) < MIN_RATE) {
             log.debug("Ставка была отрицательной ({}), установлена в 0%", rate);
             return BigDecimal.ZERO;
         }

@@ -1,15 +1,15 @@
-package com.credithandler.calculator.dto.calc;
+package com.credithandler.calculator.api.dto.calc;
 
 import com.credithandler.calculator.model.EmploymentPosition;
 import com.credithandler.calculator.model.EmploymentStatus;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmploymentDto {

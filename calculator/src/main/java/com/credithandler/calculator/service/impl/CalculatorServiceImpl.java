@@ -1,9 +1,9 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.calculator.dto.calc.CreditDto;
-import com.credithandler.calculator.dto.calc.ScoringDataDto;
-import com.credithandler.calculator.dto.loan.LoanOfferDto;
-import com.credithandler.calculator.dto.loan.LoanStatementRequestDto;
+import com.credithandler.calculator.api.dto.calc.CreditDto;
+import com.credithandler.calculator.api.dto.calc.ScoringDataDto;
+import com.credithandler.calculator.api.dto.loan.LoanOfferDto;
+import com.credithandler.calculator.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.calculator.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,23 +18,22 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CalculatorServiceImpl implements CalculatorService {
 
+    private static final boolean[] INSURANCE_OPTIONS = {false, true};
+    private static final boolean[] SALARY_OPTIONS = {false, true};
+
     private final CalculateLoanService loanService;
     private final CalculateCreditService calculateCreditService;
 
     @Override
     public List<LoanOfferDto> calculatingOffers(LoanStatementRequestDto request) {
-        log.info("Получен запрос на расчет предложений: сумма {} руб., срок {} мес.",
-                request.getAmount(), request.getTerm());
+        log.info(">> calculatingOffers, request: {}", request);
 
         List<LoanOfferDto> offers = new ArrayList<>();
 
-        boolean[] insuranceOptions = {false, true};
-        boolean[] salaryOptions = {false, true};
-
         log.debug("Генерация 4 предложений");
 
-        for (boolean insuranceOption : insuranceOptions) {
-            for (boolean salaryOption : salaryOptions) {
+        for (boolean insuranceOption : INSURANCE_OPTIONS) {
+            for (boolean salaryOption : SALARY_OPTIONS) {
                 LoanOfferDto offer = loanService.calculateLoan(
                         request.getAmount(),
                         request.getTerm(),
@@ -43,27 +42,25 @@ public class CalculatorServiceImpl implements CalculatorService {
                 );
 
                 offers.add(offer);
+                log.debug("Сгенерировано предложение: страхование={}, зарплатный={}, ставка={}%",
+                        insuranceOption, salaryOption, offer.getRate());
             }
         }
 
         offers.sort(Comparator.comparing(LoanOfferDto::getTotalAmount));
 
-        log.info("Сгенерировано {} предложений. Лучшая ставка: {}%",
+        log.info("<< calculatingOffers, offers count: {}, best rate: {}%",
                 offers.size(), offers.getFirst().getRate());
-
         return offers;
     }
 
     @Override
     public CreditDto calculateCredit(ScoringDataDto request) {
-        log.info("Получен запрос на расчет кредита: сумма {} руб., срок {} мес.",
-                request.getAmount(), request.getTerm());
+        log.info(">> calculateCredit, request: {}", request);
 
         CreditDto credit = calculateCreditService.calculateCredit(request);
 
-        log.info("Кредит рассчитан: ежемесячный платеж {} руб., ставка {}%",
-                credit.getMonthlyPayment(), credit.getRate());
-
+        log.info("<< calculateCredit, credit: {}", credit);
         return credit;
     }
 }

@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.calculator.dto.loan.LoanOfferDto;
+import com.credithandler.calculator.api.dto.loan.LoanOfferDto;
 
 import java.math.BigDecimal;
 

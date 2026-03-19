@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.calculator.dto.loan.LoanOfferDto;
+import com.credithandler.calculator.api.dto.loan.LoanOfferDto;
 import com.credithandler.calculator.service.CalculateLoanService;
 import com.credithandler.calculator.service.CalculateMonthlyPaymentService;
 import com.credithandler.calculator.service.CalculateRateService;
@@ -27,10 +27,9 @@ public class CalculateLoanServiceImpl implements CalculateLoanService {
      */
     @Override
     public LoanOfferDto calculateLoan(BigDecimal amount, Integer term, Boolean isInsuranceEnabled, Boolean isSalaryClient) {
-        log.info("Расчет кредитного предложения: сумма {} руб., срок {} мес., страхование {}, зарплатный клиент {}",
+        log.info(">> calculateLoan, amount: {}, term: {}, isInsuranceEnabled: {}, isSalaryClient: {}",
                 amount, term, isInsuranceEnabled, isSalaryClient);
 
-        // Изначально идет как ежемесячная
         BigDecimal finalRate = rateCalculator.calculatePrescoringRate(isInsuranceEnabled, isSalaryClient);
         log.debug("Итоговая процентная ставка: {}%", finalRate);
 
@@ -51,9 +50,7 @@ public class CalculateLoanServiceImpl implements CalculateLoanService {
                 isSalaryClient
         );
 
-        log.info("Кредитное предложение сформировано: ставка {}%, ежемесячный платеж {} руб., общая сумма {} руб.",
-                finalRate, monthlyPayment, totalAmount);
-
+        log.info("<< calculateLoan, loanOfferDto: {}", result);
         return result;
     }
 }

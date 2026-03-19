@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.calculator.dto.calc.PaymentScheduleElementDto;
+import com.credithandler.calculator.api.dto.calc.PaymentScheduleElementDto;
 
 import java.math.BigDecimal;
 import java.util.List;

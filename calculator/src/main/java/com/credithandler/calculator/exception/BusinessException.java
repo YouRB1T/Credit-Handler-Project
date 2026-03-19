@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 @Getter
 public class BusinessException extends RuntimeException {
+    private static final String BUSINESS_EXCEPTION_CODE = "422";
 
     private final String code;
     private final String message;
@@ -13,7 +14,7 @@ public class BusinessException extends RuntimeException {
 
     private BusinessException(String message, String description) {
         super(message);
-        this.code = "422";
+        this.code = BUSINESS_EXCEPTION_CODE;
         this.message = message;
         this.description = description;
         this.timestamp = LocalDateTime.now();

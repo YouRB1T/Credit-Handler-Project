@@ -1,12 +1,13 @@
-package com.credithandler.calculator.dto.calc;
+package com.credithandler.calculator.api.dto.calc;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 public class PaymentScheduleElementDto {
     private Integer number;
