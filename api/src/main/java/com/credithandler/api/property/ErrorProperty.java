@@ -1,17 +1,13 @@
-package com.credithandler.calculator.config;
+package com.credithandler.api.property;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@Getter
-@Setter
 @Component
+@Getter
 @ConfigurationProperties(prefix = "error")
-public class ErrorProperties {
-
+public class ErrorProperty {
     private Integer businessCode;
     private Integer validationCode;
-    private Integer serverCode;
 }

@@ -10,6 +10,7 @@ import com.credithandler.calculator.config.ScoringProperties;
 import com.credithandler.api.controller.calculator.dto.calc.EmploymentDto;
 import com.credithandler.api.controller.calculator.dto.calc.ScoringDataDto;
 import com.credithandler.api.exception.BusinessException;
+import com.credithandler.calculator.constants.ErrorMessages;
 import com.credithandler.calculator.service.CalculateRateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,10 +88,10 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         log.debug("Проверка критериев для мгновенного отказа");
 
         if (employment.getEmploymentStatus() == EmploymentStatus.UNEMPLOYED) {
-            log.warn("Отказ: {}", errorProperties.getLogEmploymentStatus());
+            log.warn("Отказ: {}", ErrorMessages.ERROR_LOG_EMPLOYMENT_STATUS);
             throw BusinessException.of(
-                    errorProperties.getLogEmploymentStatus(),
-                    errorProperties.getUnemployedMessage()
+                    ErrorMessages.ERROR_LOG_EMPLOYMENT_STATUS,
+                    ErrorMessages.ERROR_UNEMPLOYED_MESSAGE
             );
         }
 
@@ -98,38 +99,38 @@ public class CalculateRateServiceImpl implements CalculateRateService {
         BigDecimal maxAllowedLoan = annualSalary.multiply(new BigDecimal(props.getMaxSalaryMultiple()));
 
         if (request.getAmount().compareTo(maxAllowedLoan) > 0) {
-            log.warn("Отказ: {}", errorProperties.getLogLoanAmount());
+            log.warn("Отказ: {}", ErrorMessages.ERROR_LOG_LOAN_AMOUNT);
             throw BusinessException.of(
-                    errorProperties.getLogLoanAmount(),
-                    String.format(errorProperties.getLoanAmountMessage() + " (%.2f > %.2f)",
+                    ErrorMessages.ERROR_LOG_LOAN_AMOUNT,
+                    String.format(ErrorMessages.ERROR_LOAN_AMOUNT_MESSAGE + " (%.2f > %.2f)",
                             request.getAmount(), maxAllowedLoan)
             );
         }
 
         int age = calculateAge(request.getBirthdate());
         if (age < props.getMinAge() || age > props.getMaxAge()) {
-            log.warn("Отказ: {}", errorProperties.getLogAge());
+            log.warn("Отказ: {}", ErrorMessages.ERROR_LOG_AGE);
             throw BusinessException.of(
-                    errorProperties.getLogAge(),
-                    String.format(errorProperties.getAgeMessage() + " [%d-%d], текущий: %d",
+                    ErrorMessages.ERROR_LOG_AGE,
+                    String.format(ErrorMessages.ERROR_AGE_MESSAGE + " [%d-%d], текущий: %d",
                             props.getMinAge(), props.getMaxAge(), age)
             );
         }
 
         if (employment.getWorkExperienceTotal() < props.getMinTotalWorkExperience()) {
-            log.warn("Отказ: {}", errorProperties.getLogTotalExperience());
+            log.warn("Отказ: {}", ErrorMessages.ERROR_LOG_TOTAL_EXPERIENCE);
             throw BusinessException.of(
-                    errorProperties.getLogTotalExperience(),
-                    String.format(errorProperties.getTotalExperienceMessage() + " %d < %d",
+                    ErrorMessages.ERROR_LOG_TOTAL_EXPERIENCE,
+                    String.format(ErrorMessages.ERROR_TOTAL_EXPERIENCE_MESSAGE + " %d < %d",
                             employment.getWorkExperienceTotal(), props.getMinTotalWorkExperience())
             );
         }
 
         if (employment.getWorkExperienceCurrent() < props.getMinCurrentWorkExperience()) {
-            log.warn("Отказ: {}", errorProperties.getLogCurrentExperience());
+            log.warn("Отказ: {}", ErrorMessages.ERROR_LOG_CURRENT_EXPERIENCE);
             throw BusinessException.of(
-                    errorProperties.getLogCurrentExperience(),
-                    String.format(errorProperties.getCurrentExperienceMessage() + " %d < %d",
+                    ErrorMessages.ERROR_LOG_CURRENT_EXPERIENCE,
+                    String.format(ErrorMessages.ERROR_CURRENT_EXPERIENCE_MESSAGE + " %d < %d",
                             employment.getWorkExperienceCurrent(), props.getMinCurrentWorkExperience())
             );
         }
@@ -141,11 +142,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
 
         BigDecimal newRate = switch (status) {
             case SELF_EMPLOYED -> {
-                log.debug(errorProperties.getLogSelfEmployed(), props.getSelfEmployedIncrease());
+                log.debug(ErrorMessages.ERROR_LOG_SELF_EMPLOYED, props.getSelfEmployedIncrease());
                 yield currentRate.add(props.getSelfEmployedIncrease());
             }
             case COMPANY_OWNER -> {
-                log.debug(errorProperties.getLogCompanyOwner(), props.getCompanyOwnerIncrease());
+                log.debug(ErrorMessages.ERROR_LOG_COMPANY_OWNER, props.getCompanyOwnerIncrease());
                 yield currentRate.add(props.getCompanyOwnerIncrease());
             }
             default -> currentRate;
@@ -161,11 +162,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
 
         BigDecimal newRate = switch (position) {
             case MIDDLE_MANAGER -> {
-                log.debug(errorProperties.getLogMiddleManager(), props.getMiddleManagerDecrease());
+                log.debug(ErrorMessages.ERROR_LOG_MIDDLE_MANAGER, props.getMiddleManagerDecrease());
                 yield currentRate.subtract(props.getMiddleManagerDecrease());
             }
             case TOP_MANAGER -> {
-                log.debug(errorProperties.getLogTopManager(), props.getTopManagerDecrease());
+                log.debug(ErrorMessages.ERROR_LOG_TOP_MANAGER, props.getTopManagerDecrease());
                 yield currentRate.subtract(props.getTopManagerDecrease());
             }
             default -> currentRate;
@@ -181,11 +182,11 @@ public class CalculateRateServiceImpl implements CalculateRateService {
 
         BigDecimal newRate = switch (status) {
             case MARRIED -> {
-                log.debug(errorProperties.getLogMarried(), props.getMarriedDecrease());
+                log.debug(ErrorMessages.ERROR_LOG_MARRIED, props.getMarriedDecrease());
                 yield currentRate.subtract(props.getMarriedDecrease());
             }
             case DIVORCED -> {
-                log.debug(errorProperties.getLogDivorced(), props.getDivorcedIncrease());
+                log.debug(ErrorMessages.ERROR_LOG_DIVORCED, props.getDivorcedIncrease());
                 yield currentRate.add(props.getDivorcedIncrease());
             }
             default -> currentRate;
@@ -206,7 +207,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
             case FEMALE:
                 if (age >= props.getFemaleAgeMin() && age <= props.getFemaleAgeMax()) {
                     newRate = currentRate.subtract(props.getFemaleDecrease());
-                    log.debug(errorProperties.getLogFemaleDiscount(),
+                    log.debug(ErrorMessages.ERROR_LOG_FEMALE_DISCOUNT,
                             props.getFemaleAgeMin(), props.getFemaleAgeMax(),
                             props.getFemaleDecrease());
                 }
@@ -215,7 +216,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
             case MALE:
                 if (age >= props.getMaleAgeMin() && age <= props.getMaleAgeMax()) {
                     newRate = currentRate.subtract(props.getMaleDecrease());
-                    log.debug(errorProperties.getLogMaleDiscount(),
+                    log.debug(ErrorMessages.ERROR_LOG_MALE_DISCOUNT,
                             props.getMaleAgeMin(), props.getMaleAgeMax(),
                             props.getMaleDecrease());
                 }
@@ -223,7 +224,7 @@ public class CalculateRateServiceImpl implements CalculateRateService {
 
             case NON_BINARY:
                 newRate = currentRate.add(props.getNonBinaryIncrease());
-                log.debug(errorProperties.getLogNonBinaryIncrease(), props.getNonBinaryIncrease());
+                log.debug(ErrorMessages.ERROR_LOG_NON_BINARY_INCREASE, props.getNonBinaryIncrease());
                 break;
         }
 

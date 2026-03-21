@@ -1,6 +1,7 @@
 package com.credithandler.api.exception;
 
-import com.credithandler.api.properties.ErrorProperties;
+import com.credithandler.api.constants.ErrorMessages;
+import com.credithandler.api.property.ErrorProperty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,16 +19,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class BusinessExceptionHandler {
-    private final ErrorProperties errorProperties;
+
+    private final ErrorProperty errorProperties;
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
 
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(errorProperties.getResponseTimestamp(), LocalDateTime.now());
-        errorResponse.put(errorProperties.getResponseStatus(), errorProperties.getBusinessCode());
-        errorResponse.put(errorProperties.getResponseError(), errorProperties.getBusinessErrorTitle());
-        errorResponse.put(errorProperties.getResponseMessage(), ex.getMessage());
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_TIMESTAMP, LocalDateTime.now());
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getBusinessCode());
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERROR, ErrorMessages.ERROR_BUSINESS_TITLE);
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_MESSAGE, ex.getMessage());
 
         return ResponseEntity
                 .status(errorProperties.getBusinessCode())
@@ -44,10 +46,10 @@ public class BusinessExceptionHandler {
         });
 
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(errorProperties.getResponseTimestamp(), LocalDateTime.now());
-        errorResponse.put(errorProperties.getResponseStatus(), HttpStatus.BAD_REQUEST.value());
-        errorResponse.put(errorProperties.getResponseError(), errorProperties.getValidationErrorTitle());
-        errorResponse.put(errorProperties.getResponseErrors(), errors);
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_TIMESTAMP, LocalDateTime.now());
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getValidationCode());
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERROR, ErrorMessages.ERROR_VALIDATION_TITLE);
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERRORS, errors);
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
