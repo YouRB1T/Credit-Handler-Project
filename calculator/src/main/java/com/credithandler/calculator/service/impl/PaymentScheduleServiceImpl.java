@@ -15,6 +15,8 @@ import java.util.List;
 @Slf4j
 public class PaymentScheduleServiceImpl implements PaymentScheduleService {
 
+    private static final int ONE_HANDRED = 100;
+    private static final int NUM_MONTH = 12;
     private static final int RESULT_SCALE = 2;
     private static final int ONE_MONTH = 1;
     private static final int FIRST_PAYMENT_NUMBER = 1;
@@ -37,6 +39,7 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
 
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
+        monthlyRate = monthlyRate.divide(new BigDecimal(NUM_MONTH)).divide(new BigDecimal(ONE_HANDRED));
         BigDecimal remainingDebt = amount;
         LocalDate date = LocalDate.now().plusMonths(ONE_MONTH);
 
