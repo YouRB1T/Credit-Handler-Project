@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.api.controller.calculator.dto.calc.PaymentScheduleElementDto;
+import com.credithandler.api.dto.calc.PaymentScheduleElementDto;
 import com.credithandler.calculator.service.impl.PaymentScheduleServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

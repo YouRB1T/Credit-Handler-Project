@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.api.controller.calculator.dto.loan.LoanOfferDto;
+import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.calculator.service.CalculateLoanService;
 import com.credithandler.calculator.service.CalculateMonthlyPaymentService;
 import com.credithandler.calculator.service.CalculateRateService;

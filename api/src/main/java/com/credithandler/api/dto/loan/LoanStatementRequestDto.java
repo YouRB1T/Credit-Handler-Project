@@ -1,4 +1,4 @@
-package com.credithandler.api.controller.calculator.dto.loan;
+package com.credithandler.api.dto.loan;
 
 import com.credithandler.api.annotation.AdultAge;
 import com.fasterxml.jackson.annotation.JsonFormat;

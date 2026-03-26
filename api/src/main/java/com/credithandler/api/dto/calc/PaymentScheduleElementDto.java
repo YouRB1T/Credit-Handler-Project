@@ -1,4 +1,4 @@
-package com.credithandler.api.controller.calculator.dto.calc;
+package com.credithandler.api.dto.calc;
 
 import lombok.*;
 

@@ -1,7 +1,7 @@
 package com.credithandler.calculator.controller;
 
-import com.credithandler.api.controller.calculator.dto.calc.ScoringDataDto;
-import com.credithandler.api.controller.calculator.dto.loan.LoanStatementRequestDto;
+import com.credithandler.api.dto.calc.ScoringDataDto;
+import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.calculator.utils.TestDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

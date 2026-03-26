@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service.impl;
 
-import com.credithandler.api.controller.calculator.dto.calc.PaymentScheduleElementDto;
+import com.credithandler.api.dto.calc.PaymentScheduleElementDto;
 import com.credithandler.calculator.service.PaymentScheduleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
