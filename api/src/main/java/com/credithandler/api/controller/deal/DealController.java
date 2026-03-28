@@ -1,11 +1,10 @@
 package com.credithandler.api.controller.deal;
 
+import com.credithandler.api.dto.error.BusinessErrorResponse;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
-import com.credithandler.api.exception.BusinessException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +34,7 @@ public interface DealController {
             @ApiResponse(responseCode = "200", description = "Успешно созданы предложения",
                     content = @Content(schema = @Schema(implementation = LoanOfferDto.class))),
             @ApiResponse(responseCode = "422", description = "Бизнес ошибка",
-                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
+                    content = @Content(schema = @Schema(implementation = BusinessErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     ResponseEntity<List<LoanOfferDto>> calculateStatements(
@@ -49,7 +48,7 @@ public interface DealController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Предложение успешно выбрано"),
             @ApiResponse(responseCode = "422", description = "Бизнес ошибка",
-                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
+                    content = @Content(schema = @Schema(implementation = BusinessErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     ResponseEntity<Void> selectOfferForDeal(
@@ -63,7 +62,7 @@ public interface DealController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Регистрация завершена, кредит рассчитан"),
             @ApiResponse(responseCode = "422", description = "Бизнес ошибка",
-                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
+                    content = @Content(schema = @Schema(implementation = BusinessErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     ResponseEntity<Void> registrationDealAndCountCredit(

@@ -5,6 +5,7 @@ import com.credithandler.deal.model.Client;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+// TODO: Написать тесты на Mapper
 @Mapper(componentModel = "spring")
 public interface ClientMapper {
 

@@ -2,6 +2,7 @@ package com.credithandler.deal.service.impl;
 
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
+import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.deal.service.CalculatingForClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,21 +17,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CalculatingForClientImpl implements CalculatingForClient {
-    private final RestClient restClient;
-
-    @Value("${calculator.url}")
-    private String calculatorUrl;
+    private final CalculatorClient calculatorClient;
 
     public List<LoanOfferDto> getLoanOffers(LoanStatementRequestDto request) {
         log.info(">> getLoanOffers, request: {}", request);
 
-            List<LoanOfferDto> offers = restClient.post()
-                    .uri(calculatorUrl + "/calculator/offers")
-                    .body(request)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<List<LoanOfferDto>>() {});
+        List<LoanOfferDto> offers = calculatorClient.getLoanOffers(request);
 
-        log.info("<< getLoanOffers, offers count: {}", offers != null ? offers.size() : 0);
+        log.info("<< getLoanOffers, offers count: {}", offers);
         return offers;
     }
 }

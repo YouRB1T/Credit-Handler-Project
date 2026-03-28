@@ -1,4 +1,4 @@
-package com.credithandler.api.exception;
+package com.credithandler.calculator.exception;
 
 import lombok.Getter;
 import java.time.LocalDateTime;
