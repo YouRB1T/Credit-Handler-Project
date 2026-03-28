@@ -1,5 +1,7 @@
 package com.credithandler.deal.client;
 
+import com.credithandler.api.dto.calc.CreditDto;
+import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -17,4 +19,7 @@ public interface CalculatorClient {
 
     @PostMapping("/offers")
     List<LoanOfferDto> getLoanOffers(@RequestBody LoanStatementRequestDto request);
+
+    @PostMapping("/calc")
+    CreditDto calculateCredit(@RequestBody ScoringDataDto request);
 }

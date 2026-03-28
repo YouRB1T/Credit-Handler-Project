@@ -1,11 +1,17 @@
 package com.credithandler.deal.service.impl;
 
+import com.credithandler.api.dto.calc.CreditDto;
+import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
+import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
+import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.deal.exception.BusinessException;
-import com.credithandler.deal.model.HistoryStatus;
-import com.credithandler.deal.model.Statement;
-import com.credithandler.deal.model.enums.ApplicationStatus;
-import com.credithandler.deal.model.enums.ChangeType;
+import com.credithandler.deal.mapper.CreditMapper;
+import com.credithandler.deal.mapper.ScoringDataMapper;
+import com.credithandler.deal.model.*;
+import com.credithandler.deal.model.enums.*;
+import com.credithandler.deal.repository.ClientRepository;
+import com.credithandler.deal.repository.CreditRepository;
 import com.credithandler.deal.repository.StatementRepository;
 import com.credithandler.deal.service.DealService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +30,13 @@ import static com.credithandler.deal.model.enums.ApplicationStatus.PREAPPROVAL;
 public class DealServiceImpl implements DealService {
 
     private final StatementRepository statementRepository;
+    private final ClientRepository clientRepository;
+    private final CreditRepository creditRepository;
+
+    private final ScoringDataMapper scoringDataMapper;
+    private final CreditMapper creditMapper;
+
+    private final CalculatorClient calculatorClient;
     @Override
     @Transactional
     public void selectOfferForDeal(LoanOfferDto request) {
@@ -65,5 +78,78 @@ public class DealServiceImpl implements DealService {
         log.debug("Заявка сохранена");
 
         log.info("<< selectOfferForDeal, statementId: {}, status: {}", statementId, statement.getStatus());
+    }
+
+    @Override
+    @Transactional
+    public void registrationDealAndCountCredit(FinishRegistrationRequestDto request, UUID statementId) {
+        log.info(">> registrationDealAndCountCredit, statementId: {}, request: {}", statementId, request);
+
+        // 1. Достаём заявку
+        Statement statement = statementRepository.findById(statementId)
+                .orElseThrow(() -> new RuntimeException("Заявка с ID " + statementId + " не найдена"));
+
+        // 2. Проверяем статус
+        if (statement.getStatus() != ApplicationStatus.APPROVED) {
+            throw new IllegalStateException("Заявка должна быть в статусе APPROVED");
+        }
+
+        // 3. Достаём клиента
+        Client client = clientRepository.findById(statement.getClientId())
+                .orElseThrow(() -> new RuntimeException("Клиент с ID " + statement.getClientId() + " не найден"));
+
+        // 4. Обновляем клиента данными из FinishRegistrationRequestDto
+        client.setGender(Gender.valueOf(request.getGender().toString()));
+        client.setMaritalStatus(MaritalStatus.valueOf(request.getMaritalStatus().toString()));
+        client.setDependentAmount(request.getDependentAmount());
+        client.setAccountNumber(request.getAccountNumber());
+
+        // 5. Дозаполняем паспорт (добавляем дату выдачи и кем выдан)
+        if (client.getPassport() != null) {
+            Passport passport = client.getPassport();
+            passport.setIssueDate(request.getPassportIssueDate());
+            passport.setIssueBranch(request.getPassportIssueBranch());
+        } else {
+            // На случай, если паспорт не был создан (защита)
+            Passport passport = Passport.builder()
+                    .passportId(UUID.randomUUID())
+                    .issueDate(request.getPassportIssueDate())
+                    .issueBranch(request.getPassportIssueBranch())
+                    .build();
+            client.setPassport(passport);
+        }
+
+        // 6. Сохраняем обновлённого клиента
+        clientRepository.save(client);
+        log.debug("Клиент обновлён: {}", client.getClientId());
+
+        // 7. Формируем ScoringDataDto (теперь все данные заполнены)
+        ScoringDataDto scoringData = scoringDataMapper.toScoringDataDto(request, client, statement);
+        log.debug("ScoringDataDto сформирован: {}", scoringData);
+
+        // 8. Отправляем запрос в калькулятор
+        CreditDto creditDto = calculatorClient.calculateCredit(scoringData);
+        log.debug("CreditDto получен от калькулятора");
+
+        // 9. Создаём и сохраняем Credit
+        Credit credit = creditMapper.toEntity(creditDto);
+        Credit savedCredit = creditRepository.save(credit);
+
+        // 10. Обновляем заявку
+        statement.setCreditId(savedCredit.getCreditId());
+        statement.setStatus(ApplicationStatus.CC_APPROVED);
+
+        // 11. Добавляем историю статусов
+        HistoryStatus history = HistoryStatus.builder()
+                .status(ApplicationStatus.CC_APPROVED.toString())
+                .timestamp(LocalDateTime.now())
+                .changeType(ChangeType.AUTOMATIC)
+                .build();
+        statement.getHistoryStatus().add(history);
+
+        // 12. Сохраняем заявку
+        statementRepository.save(statement);
+
+        log.info("<< registrationDealAndCountCredit, creditId: {}", savedCredit.getCreditId());
     }
 }

@@ -10,5 +10,11 @@ import org.mapstruct.Mapping;
 public interface ClientMapper {
 
     @Mapping(target = "clientId", ignore = true)
+    @Mapping(target = "passport", ignore = true)
+    @Mapping(target = "gender", ignore = true)
+    @Mapping(target = "maritalStatus", ignore = true)
+    @Mapping(target = "dependentAmount", ignore = true)
+    @Mapping(target = "accountNumber", ignore = true)
+    @Mapping(target = "employmentId", ignore = true)
     Client toEntity(LoanStatementRequestDto dto);
 }

@@ -20,7 +20,9 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
     private static final int RESULT_SCALE = 2;
     private static final int ONE_MONTH = 1;
     private static final int FIRST_PAYMENT_NUMBER = 1;
+    private static final int CALCULATION_SCALE = 10;
 
+    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
     /*
     Параметры для подсчета
     общая сумма месячного платежа (total payment)
@@ -39,7 +41,10 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
 
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
-        monthlyRate = monthlyRate.divide(new BigDecimal(NUM_MONTH)).divide(new BigDecimal(ONE_HANDRED));
+        monthlyRate = monthlyRate
+                .divide(BigDecimal.valueOf(NUM_MONTH), CALCULATION_SCALE, ROUNDING_MODE)
+                .divide(BigDecimal.valueOf(ONE_HANDRED), CALCULATION_SCALE, ROUNDING_MODE)
+                .setScale(RESULT_SCALE, ROUNDING_MODE);
         BigDecimal remainingDebt = amount;
         LocalDate date = LocalDate.now().plusMonths(ONE_MONTH);
 
