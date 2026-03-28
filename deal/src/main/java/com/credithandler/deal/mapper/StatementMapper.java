@@ -11,6 +11,6 @@ public interface StatementMapper {
 
     @Mapping(target = "statementId", ignore = true)
     @Mapping(target = "clientId", source = "client.clientId")
-    @Mapping(target = "appliedOffers", ignore = true)
+    @Mapping(target = "appliedOffer", ignore = true)
     Statement toEntity(LoanStatementRequestDto dto, Client client);
 }

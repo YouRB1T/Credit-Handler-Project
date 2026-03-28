@@ -6,10 +6,7 @@ import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.deal.service.CalculatingForClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import java.util.List;
 

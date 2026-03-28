@@ -5,6 +5,7 @@ import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.deal.mapper.StatementMapper;
 import com.credithandler.deal.model.Client;
 import com.credithandler.deal.model.Statement;
+import com.credithandler.deal.model.enums.ApplicationStatus;
 import com.credithandler.deal.repository.StatementRepository;
 import com.credithandler.deal.service.CalculatingForClient;
 import com.credithandler.deal.service.ClientService;
@@ -35,6 +36,7 @@ public class StatementServiceImpl implements StatementService {
         log.debug("Клиент создан: {}", client.getClientId());
 
         Statement statement = statementMapper.toEntity(request, client);
+        statement.setStatus(ApplicationStatus.PREAPPROVAL);
         Statement savedStatement = statementRepository.save(statement);
         log.debug("Заявка создана: {}", savedStatement.getStatementId());
 
@@ -44,7 +46,6 @@ public class StatementServiceImpl implements StatementService {
         UUID statementId = savedStatement.getStatementId();
         offers.forEach(offer -> offer.setStatementId(statementId));
 
-        savedStatement.setAppliedOffers(offers);
         statementRepository.save(savedStatement);
         log.debug("Предложения сохранены в заявку");
 
