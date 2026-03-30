@@ -2,7 +2,6 @@ package com.credithandler.deal.mapper;
 
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.deal.model.Credit;
-import com.credithandler.deal.model.enums.CreditStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

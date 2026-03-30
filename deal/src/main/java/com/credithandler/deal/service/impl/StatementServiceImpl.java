@@ -2,6 +2,8 @@ package com.credithandler.deal.service.impl;
 
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
+import com.credithandler.deal.constants.ErrorConstants;
+import com.credithandler.deal.exception.BusinessException;
 import com.credithandler.deal.mapper.StatementMapper;
 import com.credithandler.deal.model.Client;
 import com.credithandler.deal.model.Statement;
@@ -33,14 +35,33 @@ public class StatementServiceImpl implements StatementService {
         log.info(">> createStatement, request: {}", request);
 
         Client client = clientService.createClient(request);
+        if (client == null) {
+            throw BusinessException.of(
+                    ErrorConstants.CLIENT_NOT_CREATED,
+                    ErrorConstants.CLIENT_NOT_CREATED_DESC
+            );
+        }
         log.debug("Клиент создан: {}", client.getClientId());
 
         Statement statement = statementMapper.toEntity(request, client);
+        if (statement == null) {
+            throw BusinessException.of(
+                    ErrorConstants.STATEMENT_NOT_CREATED,
+                    ErrorConstants.STATEMENT_NOT_CREATED_DESC
+            );
+        }
+
         statement.setStatus(ApplicationStatus.PREAPPROVAL);
         Statement savedStatement = statementRepository.save(statement);
         log.debug("Заявка создана: {}", savedStatement.getStatementId());
 
         List<LoanOfferDto> offers = calculatorClient.getLoanOffers(request);
+        if (offers == null || offers.isEmpty()) {
+            throw BusinessException.of(
+                    ErrorConstants.OFFERS_NOT_FOUND,
+                    ErrorConstants.OFFERS_NOT_FOUND_DESC
+            );
+        }
         log.debug("Получено {} предложений от калькулятора", offers.size());
 
         UUID statementId = savedStatement.getStatementId();

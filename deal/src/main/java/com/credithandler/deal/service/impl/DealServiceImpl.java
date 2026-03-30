@@ -6,6 +6,7 @@ import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.deal.exception.BusinessException;
+import com.credithandler.deal.constants.ErrorConstants;
 import com.credithandler.deal.mapper.CreditMapper;
 import com.credithandler.deal.mapper.ScoringDataMapper;
 import com.credithandler.deal.model.*;
@@ -37,6 +38,7 @@ public class DealServiceImpl implements DealService {
     private final CreditMapper creditMapper;
 
     private final CalculatorClient calculatorClient;
+
     @Override
     @Transactional
     public void selectOfferForDeal(LoanOfferDto request) {
@@ -48,14 +50,17 @@ public class DealServiceImpl implements DealService {
                 .orElseThrow(() -> {
                     log.error("Заявка не найдена: {}", statementId);
                     return BusinessException.of(
-                            "Заявка",
-                            "Заявка с ID " + statementId + " не найдена"
+                            ErrorConstants.STATEMENT_NOT_FOUND,
+                            String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
                     );
                 });
 
         if (statement.getStatus() != PREAPPROVAL) {
             log.warn("Заявка уже обработана, текущий статус: {}", statement.getStatus());
-            throw new IllegalStateException("Заявка уже находится в статусе " + statement.getStatus());
+            throw BusinessException.of(
+                    ErrorConstants.INVALID_STATEMENT_STATUS,
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, statement.getStatus())
+            );
         }
 
         ApplicationStatus oldStatus = statement.getStatus();
@@ -85,32 +90,35 @@ public class DealServiceImpl implements DealService {
     public void registrationDealAndCountCredit(FinishRegistrationRequestDto request, UUID statementId) {
         log.info(">> registrationDealAndCountCredit, statementId: {}, request: {}", statementId, request);
 
-        // 1. Достаём заявку
         Statement statement = statementRepository.findById(statementId)
-                .orElseThrow(() -> new RuntimeException("Заявка с ID " + statementId + " не найдена"));
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.STATEMENT_NOT_FOUND,
+                        String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
+                ));
 
-        // 2. Проверяем статус
         if (statement.getStatus() != ApplicationStatus.APPROVED) {
-            throw new IllegalStateException("Заявка должна быть в статусе APPROVED");
+            throw BusinessException.of(
+                    ErrorConstants.INVALID_STATEMENT_STATUS,
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, ApplicationStatus.APPROVED)
+            );
         }
 
-        // 3. Достаём клиента
         Client client = clientRepository.findById(statement.getClientId())
-                .orElseThrow(() -> new RuntimeException("Клиент с ID " + statement.getClientId() + " не найден"));
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.CLIENT_NOT_FOUND,
+                        String.format(ErrorConstants.CLIENT_NOT_FOUND_DESC, statement.getClientId())
+                ));
 
-        // 4. Обновляем клиента данными из FinishRegistrationRequestDto
         client.setGender(Gender.valueOf(request.getGender().toString()));
         client.setMaritalStatus(MaritalStatus.valueOf(request.getMaritalStatus().toString()));
         client.setDependentAmount(request.getDependentAmount());
         client.setAccountNumber(request.getAccountNumber());
 
-        // 5. Дозаполняем паспорт (добавляем дату выдачи и кем выдан)
         if (client.getPassport() != null) {
             Passport passport = client.getPassport();
             passport.setIssueDate(request.getPassportIssueDate());
             passport.setIssueBranch(request.getPassportIssueBranch());
         } else {
-            // На случай, если паспорт не был создан (защита)
             Passport passport = Passport.builder()
                     .passportId(UUID.randomUUID())
                     .issueDate(request.getPassportIssueDate())
@@ -119,27 +127,28 @@ public class DealServiceImpl implements DealService {
             client.setPassport(passport);
         }
 
-        // 6. Сохраняем обновлённого клиента
         clientRepository.save(client);
         log.debug("Клиент обновлён: {}", client.getClientId());
 
-        // 7. Формируем ScoringDataDto (теперь все данные заполнены)
         ScoringDataDto scoringData = scoringDataMapper.toScoringDataDto(request, client, statement);
         log.debug("ScoringDataDto сформирован: {}", scoringData);
 
-        // 8. Отправляем запрос в калькулятор
         CreditDto creditDto = calculatorClient.calculateCredit(scoringData);
+        if (creditDto == null) {
+            throw BusinessException.of(
+                    ErrorConstants.CREDIT_NOT_CALCULATED,
+                    ErrorConstants.CREDIT_NOT_CALCULATED_DESC
+            );
+        }
         log.debug("CreditDto получен от калькулятора");
 
-        // 9. Создаём и сохраняем Credit
         Credit credit = creditMapper.toEntity(creditDto);
+        credit.setCreditStatus(CreditStatus.CALCULATED);
         Credit savedCredit = creditRepository.save(credit);
 
-        // 10. Обновляем заявку
         statement.setCreditId(savedCredit.getCreditId());
         statement.setStatus(ApplicationStatus.CC_APPROVED);
 
-        // 11. Добавляем историю статусов
         HistoryStatus history = HistoryStatus.builder()
                 .status(ApplicationStatus.CC_APPROVED.toString())
                 .timestamp(LocalDateTime.now())
@@ -147,7 +156,6 @@ public class DealServiceImpl implements DealService {
                 .build();
         statement.getHistoryStatus().add(history);
 
-        // 12. Сохраняем заявку
         statementRepository.save(statement);
 
         log.info("<< registrationDealAndCountCredit, creditId: {}", savedCredit.getCreditId());
