@@ -1,7 +1,8 @@
-package com.credithandler.api.exception;
+package com.credithandler.calculator.exception;
 
 import com.credithandler.api.constants.ErrorMessages;
-import com.credithandler.api.property.ErrorProperty;
+import com.credithandler.api.dto.BusinessException;
+import com.credithandler.calculator.config.ErrorProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ import java.util.Map;
 @Slf4j
 public class BusinessExceptionHandler {
 
-    private final ErrorProperty errorProperties;
+    private final ErrorProperties errorProperties;
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {

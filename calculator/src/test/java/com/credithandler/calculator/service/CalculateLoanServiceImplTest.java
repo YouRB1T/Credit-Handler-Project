@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.api.controller.calculator.dto.loan.LoanOfferDto;
+import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.calculator.service.impl.CalculateLoanServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

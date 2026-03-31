@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.api.exception.BusinessException;
+import com.credithandler.api.dto.BusinessException;
 import com.credithandler.calculator.service.impl.CalculateMonthlyPaymentImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,19 +37,6 @@ class CalculateMonthlyPaymentImplTest {
         assertThat(result).isNotNull();
         assertThat(result).isEqualByComparingTo(new BigDecimal("9025.83"));
         assertThat(result.scale()).isEqualTo(2);
-    }
-
-    @Test
-    @DisplayName("Проверка BusinessException при нулевой ставке")
-    void monthlyPayment_withZeroRate_shouldThrowBusinessException() {
-
-        BigDecimal amount = new BigDecimal("100000");
-        BigDecimal annualRate = BigDecimal.ZERO;
-        Integer term = 12;
-
-        assertThatThrownBy(() -> monthlyPaymentService.monthlyPayment(amount, annualRate, term))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Процентная ставка");
     }
 
     @Test

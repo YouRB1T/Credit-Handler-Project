@@ -1,7 +1,7 @@
-package com.credithandler.api.controller.calculator.dto.calc;
+package com.credithandler.api.dto.calc;
 
-import com.credithandler.api.controller.calculator.dto.model.EmploymentPosition;
-import com.credithandler.api.controller.calculator.dto.model.EmploymentStatus;
+import com.credithandler.api.dto.model.EmploymentPosition;
+import com.credithandler.api.dto.model.EmploymentStatus;
 import jakarta.validation.constraints.*;
 import lombok.*;
 

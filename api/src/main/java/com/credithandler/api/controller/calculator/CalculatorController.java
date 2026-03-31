@@ -1,10 +1,10 @@
 package com.credithandler.api.controller.calculator;
 
-import com.credithandler.api.controller.calculator.dto.calc.CreditDto;
-import com.credithandler.api.controller.calculator.dto.calc.ScoringDataDto;
-import com.credithandler.api.controller.calculator.dto.loan.LoanOfferDto;
-import com.credithandler.api.controller.calculator.dto.loan.LoanStatementRequestDto;
-import com.credithandler.api.exception.BusinessException;
+import com.credithandler.api.dto.BusinessException;
+import com.credithandler.api.dto.calc.CreditDto;
+import com.credithandler.api.dto.calc.ScoringDataDto;
+import com.credithandler.api.dto.loan.LoanOfferDto;
+import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

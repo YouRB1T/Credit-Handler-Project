@@ -1,8 +1,8 @@
-package com.credithandler.api.controller.calculator.dto.calc;
+package com.credithandler.api.dto.calc;
 
 import com.credithandler.api.annotation.AdultAge;
-import com.credithandler.api.controller.calculator.dto.model.Gender;
-import com.credithandler.api.controller.calculator.dto.model.MaritalStatus;
+import com.credithandler.api.dto.model.Gender;
+import com.credithandler.api.dto.model.MaritalStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;

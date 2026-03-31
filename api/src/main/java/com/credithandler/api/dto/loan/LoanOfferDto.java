@@ -1,4 +1,4 @@
-package com.credithandler.api.controller.calculator.dto.loan;
+package com.credithandler.api.dto.loan;
 
 import lombok.*;
 
