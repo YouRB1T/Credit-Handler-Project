@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:deal/src/main/java/com/credithandler/deal/exception/BusinessException.java
 package com.credithandler.deal.exception;
+========
+package com.credithandler.api.dto;
+>>>>>>>> dev:api/src/main/java/com/credithandler/api/dto/BusinessException.java
 
 import lombok.Getter;
 

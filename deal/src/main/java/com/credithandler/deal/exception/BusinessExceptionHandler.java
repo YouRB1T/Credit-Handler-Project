@@ -1,7 +1,15 @@
+<<<<<<<< HEAD:deal/src/main/java/com/credithandler/deal/exception/BusinessExceptionHandler.java
 package com.credithandler.deal.exception;
 
 import com.credithandler.api.constants.ErrorMessages;
 import com.credithandler.deal.config.ErrorProperties;
+========
+package com.credithandler.calculator.exception;
+
+import com.credithandler.api.constants.ErrorMessages;
+import com.credithandler.api.dto.BusinessException;
+import com.credithandler.calculator.config.ErrorProperties;
+>>>>>>>> dev:calculator/src/main/java/com/credithandler/calculator/exception/BusinessExceptionHandler.java
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
