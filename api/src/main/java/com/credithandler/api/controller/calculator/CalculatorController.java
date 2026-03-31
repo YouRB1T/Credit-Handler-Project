@@ -2,7 +2,7 @@ package com.credithandler.api.controller.calculator;
 
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
-import com.credithandler.api.dto.error.BusinessErrorResponse;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +34,7 @@ public interface CalculatorController {
             @ApiResponse(responseCode = "200", description = "Успешно получены предложения",
                     content = @Content(schema = @Schema(implementation = LoanOfferDto.class))),
             @ApiResponse(responseCode = "422", description = "Бизнес ошибка",
-                    content = @Content(schema = @Schema(implementation = BusinessErrorResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(@Valid @RequestBody LoanStatementRequestDto request);
@@ -48,7 +48,7 @@ public interface CalculatorController {
             @ApiResponse(responseCode = "200", description = "Успешно создано кредитное предложение",
                     content = @Content(schema = @Schema(implementation = CreditDto.class))),
             @ApiResponse(responseCode = "422", description = "Бизнес ошибка",
-                    content = @Content(schema = @Schema(implementation = BusinessErrorResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     ResponseEntity<CreditDto> calculateCredit(@Valid @RequestBody ScoringDataDto request);

@@ -1,6 +1,7 @@
 package com.credithandler.calculator.exception;
 
 import com.credithandler.api.constants.ErrorMessages;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.calculator.config.ErrorProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public class BusinessExceptionHandler {
 
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put(ErrorMessages.ERROR_RESPONSE_TIMESTAMP, LocalDateTime.now());
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getValidationCode());
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getBusinessCode());
         errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERROR, ErrorMessages.ERROR_VALIDATION_TITLE);
         errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERRORS, errors);
 

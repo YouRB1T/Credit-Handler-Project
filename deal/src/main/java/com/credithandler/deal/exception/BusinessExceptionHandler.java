@@ -1,15 +1,9 @@
-<<<<<<<< HEAD:deal/src/main/java/com/credithandler/deal/exception/BusinessExceptionHandler.java
 package com.credithandler.deal.exception;
 
 import com.credithandler.api.constants.ErrorMessages;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.deal.config.ErrorProperties;
-========
-package com.credithandler.calculator.exception;
 
-import com.credithandler.api.constants.ErrorMessages;
-import com.credithandler.api.dto.BusinessException;
-import com.credithandler.calculator.config.ErrorProperties;
->>>>>>>> dev:calculator/src/main/java/com/credithandler/calculator/exception/BusinessExceptionHandler.java
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -55,7 +49,7 @@ public class BusinessExceptionHandler {
 
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put(ErrorMessages.ERROR_RESPONSE_TIMESTAMP, LocalDateTime.now());
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getValidationCode());
+        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getBusinessCode());
         errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERROR, ErrorMessages.ERROR_VALIDATION_TITLE);
         errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERRORS, errors);
 

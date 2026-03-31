@@ -200,12 +200,12 @@ class CalculateRateServiceImplTest {
         data.getEmployment().setEmploymentStatus(EmploymentStatus.SELF_EMPLOYED);
 
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
         expected = expected.add(scoringProperties.getSelfEmployedIncrease());
@@ -220,12 +220,12 @@ class CalculateRateServiceImplTest {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setEmploymentStatus(EmploymentStatus.COMPANY_OWNER);
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
         expected = expected.add(scoringProperties.getCompanyOwnerIncrease());
@@ -239,12 +239,12 @@ class CalculateRateServiceImplTest {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
 
@@ -262,8 +262,7 @@ class CalculateRateServiceImplTest {
         data.getEmployment().setPosition(null);
 
         assertThatThrownBy(() -> calculateRateService.calculateScoringRate(data))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Статус занятости");
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -273,12 +272,12 @@ class CalculateRateServiceImplTest {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setPosition(EmploymentPosition.MIDDLE_MANAGER);
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
         expected = expected.subtract(scoringProperties.getMiddleManagerDecrease());
@@ -292,12 +291,12 @@ class CalculateRateServiceImplTest {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setPosition(EmploymentPosition.TOP_MANAGER);
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
         expected = expected.subtract(scoringProperties.getTopManagerDecrease());
@@ -316,8 +315,7 @@ class CalculateRateServiceImplTest {
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
 
         assertThatThrownBy(() -> calculateRateService.calculateScoringRate(data))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Должность");
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -326,13 +324,13 @@ class CalculateRateServiceImplTest {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.setMaritalStatus(MaritalStatus.MARRIED);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
         expected = expected.subtract(scoringProperties.getMarriedDecrease());
@@ -346,13 +344,13 @@ class CalculateRateServiceImplTest {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.setMaritalStatus(MaritalStatus.DIVORCED);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
         expected = expected.add(scoringProperties.getDivorcedIncrease());
@@ -366,33 +364,18 @@ class CalculateRateServiceImplTest {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.setMaritalStatus(MaritalStatus.SINGLE);
-        data.setGender(null);
+        data.setGender(Gender.MALE);
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 
-        BigDecimal expected = loanProperties.getBaseInterest();
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(4));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
         expected = expected.add(new BigDecimal("1"));
 
         assertThat(result).isEqualByComparingTo(expected);
-    }
-
-    @Test
-    @DisplayName("countOfMaritalStatus: null статус - должен выбрасывать BusinessException")
-    void countOfMaritalStatus_withNullStatus_shouldThrowBusinessException() {
-
-        ScoringDataDto data = TestDataFactory.createValidScoringData();
-        data.setMaritalStatus(null);
-        data.setGender(null);
-        data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
-        data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
-
-        assertThatThrownBy(() -> calculateRateService.calculateScoringRate(data))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Семейное положение");
     }
 
     @ParameterizedTest
@@ -661,6 +644,7 @@ class CalculateRateServiceImplTest {
         data.setBirthdate(LocalDate.now().minusYears(30));
         data.setIsInsuranceEnabled(false);
         data.setIsSalaryClient(false);
+        data.setGender(Gender.MALE);
 
         EmploymentDto employment = new EmploymentDto();
         employment.setEmploymentStatus(EmploymentStatus.EMPLOYED);

@@ -3,7 +3,7 @@ package com.credithandler.deal.service.impl;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.deal.constants.ErrorConstants;
-import com.credithandler.deal.exception.BusinessException;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.deal.mapper.StatementMapper;
 import com.credithandler.deal.model.Client;
 import com.credithandler.deal.model.Statement;

@@ -8,7 +8,7 @@ import com.credithandler.api.dto.model.MaritalStatus;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.deal.constants.ErrorConstants;
-import com.credithandler.deal.exception.BusinessException;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.deal.mapper.CreditMapper;
 import com.credithandler.deal.mapper.ScoringDataMapper;
 import com.credithandler.deal.model.Client;

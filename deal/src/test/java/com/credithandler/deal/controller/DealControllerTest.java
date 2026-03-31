@@ -5,7 +5,7 @@ import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.api.dto.model.Gender;
 import com.credithandler.api.dto.model.MaritalStatus;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
-import com.credithandler.deal.exception.BusinessException;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.deal.service.DealService;
 import com.credithandler.deal.service.StatementService;
 import org.junit.jupiter.api.DisplayName;
