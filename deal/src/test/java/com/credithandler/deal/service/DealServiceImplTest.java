@@ -152,7 +152,7 @@ public class DealServiceImplTest {
         when(scoringDataMapper.toScoringDataDto(request, client, statement))
                 .thenReturn(new ScoringDataDto());
 
-        when(calculatorClient.calculateCredit(any()))
+        when(calculatorClient.calculateCredit(any()).getBody())
                 .thenReturn(creditDto);
 
         when(creditMapper.toEntity(creditDto))

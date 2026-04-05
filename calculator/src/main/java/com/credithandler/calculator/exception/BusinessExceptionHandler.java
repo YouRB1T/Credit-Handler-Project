@@ -1,6 +1,7 @@
 package com.credithandler.calculator.exception;
 
 import com.credithandler.api.constants.ErrorMessages;
+import com.credithandler.api.dto.error.BusinessErrorResponse;
 import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.calculator.config.ErrorProperties;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +25,13 @@ public class BusinessExceptionHandler {
     private final ErrorProperties errorProperties;
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
+    public ResponseEntity<BusinessErrorResponse> handleBusinessException(BusinessException ex) {
 
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_TIMESTAMP, LocalDateTime.now());
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getBusinessCode());
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERROR, ErrorMessages.ERROR_BUSINESS_TITLE);
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_MESSAGE, ex.getMessage());
+        BusinessErrorResponse errorResponse = new BusinessErrorResponse();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setStatus(errorProperties.getBusinessCode());
+        errorResponse.setError(ErrorMessages.ERROR_BUSINESS_TITLE);
+        errorResponse.setMessage(ex.getMessage());
 
         return ResponseEntity
                 .status(errorProperties.getBusinessCode())
@@ -38,7 +39,7 @@ public class BusinessExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<BusinessErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -46,14 +47,14 @@ public class BusinessExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_TIMESTAMP, LocalDateTime.now());
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_STATUS, errorProperties.getBusinessCode());
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERROR, ErrorMessages.ERROR_VALIDATION_TITLE);
-        errorResponse.put(ErrorMessages.ERROR_RESPONSE_ERRORS, errors);
+        BusinessErrorResponse errorResponse = new BusinessErrorResponse();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setStatus(errorProperties.getBusinessCode());
+        errorResponse.setError(ErrorMessages.ERROR_BUSINESS_TITLE);
+        errorResponse.setMessage(errors.toString());
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(errorProperties.getBusinessCode())
                 .body(errorResponse);
     }
 

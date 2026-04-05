@@ -3,7 +3,9 @@ package com.credithandler.deal.controller;
 import com.credithandler.api.controller.deal.DealController;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
+import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
+import com.credithandler.deal.model.Statement;
 import com.credithandler.deal.service.DealService;
 import com.credithandler.deal.service.StatementService;
 import lombok.RequiredArgsConstructor;
@@ -29,15 +31,14 @@ public class DealControllerImpl implements DealController {
     }
 
     @Override
-    public ResponseEntity<Void> selectOfferForDeal(LoanOfferDto request) {
-        dealService.selectOfferForDeal(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<StatementDto> selectOfferForDeal(LoanOfferDto request) {
+
+        return ResponseEntity.ok(dealService.selectOfferForDeal(request));
     }
 
     @Override
-    public ResponseEntity<Void> registrationDealAndCountCredit(
+    public ResponseEntity<StatementDto> registrationDealAndCountCredit(
             FinishRegistrationRequestDto request, UUID statementId) {
-        dealService.registrationDealAndCountCredit(request, statementId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(dealService.registrationDealAndCountCredit(request, statementId));
     }
 }

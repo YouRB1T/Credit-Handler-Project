@@ -1,5 +1,6 @@
 package com.credithandler.calculator.service.impl;
 
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.model.EmploymentPosition;
 import com.credithandler.api.dto.model.EmploymentStatus;
 import com.credithandler.api.dto.model.Gender;
@@ -9,7 +10,6 @@ import com.credithandler.calculator.config.LoanProperties;
 import com.credithandler.calculator.config.ScoringProperties;
 import com.credithandler.api.dto.calc.EmploymentDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
-import com.credithandler.calculator.exception.BusinessException;
 import com.credithandler.calculator.constants.ErrorMessages;
 import com.credithandler.calculator.service.CalculateRateService;
 import lombok.RequiredArgsConstructor;

@@ -3,18 +3,21 @@ package com.credithandler.deal.service.impl;
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
+import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.deal.constants.ErrorConstants;
 import com.credithandler.deal.mapper.CreditMapper;
 import com.credithandler.deal.mapper.ScoringDataMapper;
+import com.credithandler.deal.mapper.StatementMapper;
 import com.credithandler.deal.model.*;
 import com.credithandler.deal.model.enums.*;
 import com.credithandler.deal.repository.ClientRepository;
 import com.credithandler.deal.repository.CreditRepository;
 import com.credithandler.deal.repository.StatementRepository;
 import com.credithandler.deal.service.DealService;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,10 +41,11 @@ public class DealServiceImpl implements DealService {
     private final CreditMapper creditMapper;
 
     private final CalculatorClient calculatorClient;
+    private final StatementMapper statementMapper;
 
     @Override
     @Transactional
-    public void selectOfferForDeal(LoanOfferDto request) {
+    public StatementDto selectOfferForDeal(LoanOfferDto request) {
         log.info(">> selectOfferForDeal, request: {}", request);
 
         UUID statementId = request.getStatementId();
@@ -83,11 +87,12 @@ public class DealServiceImpl implements DealService {
         log.debug("Заявка сохранена");
 
         log.info("<< selectOfferForDeal, statementId: {}, status: {}", statementId, statement.getStatus());
+        return statementMapper.toDto(statement);
     }
 
     @Override
     @Transactional
-    public void registrationDealAndCountCredit(FinishRegistrationRequestDto request, UUID statementId) {
+    public StatementDto registrationDealAndCountCredit(FinishRegistrationRequestDto request, UUID statementId) {
         log.info(">> registrationDealAndCountCredit, statementId: {}, request: {}", statementId, request);
 
         Statement statement = statementRepository.findById(statementId)
@@ -133,11 +138,20 @@ public class DealServiceImpl implements DealService {
         ScoringDataDto scoringData = scoringDataMapper.toScoringDataDto(request, client, statement);
         log.debug("ScoringDataDto сформирован: {}", scoringData);
 
-        CreditDto creditDto = calculatorClient.calculateCredit(scoringData);
-        if (creditDto == null) {
+        CreditDto creditDto;
+
+        try {
+            creditDto = calculatorClient.calculateCredit(scoringData).getBody();
+
+            log.debug("CreditDto получен от калькулятора");
+
+        } catch (FeignException ex) {
+
+            log.error("Ошибка при вызове калькулятора: {}", ex.getMessage());
+
             throw BusinessException.of(
                     ErrorConstants.CREDIT_NOT_CALCULATED,
-                    ErrorConstants.CREDIT_NOT_CALCULATED_DESC
+                    ex.getMessage()
             );
         }
         log.debug("CreditDto получен от калькулятора");
@@ -145,6 +159,7 @@ public class DealServiceImpl implements DealService {
         Credit credit = creditMapper.toEntity(creditDto);
         credit.setCreditStatus(CreditStatus.CALCULATED);
         Credit savedCredit = creditRepository.save(credit);
+        log.debug("Создан Credit: {}", savedCredit);
 
         statement.setCreditId(savedCredit.getCreditId());
         statement.setStatus(ApplicationStatus.CC_APPROVED);
@@ -156,8 +171,10 @@ public class DealServiceImpl implements DealService {
                 .build();
         statement.getHistoryStatus().add(history);
 
-        statementRepository.save(statement);
+        Statement savedStatement = statementRepository.save(statement);
 
         log.info("<< registrationDealAndCountCredit, creditId: {}", savedCredit.getCreditId());
+
+        return statementMapper.toDto(savedStatement);
     }
 }

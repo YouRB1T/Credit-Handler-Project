@@ -3,6 +3,7 @@ package com.credithandler.api.controller.deal;
 import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
+import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -51,7 +52,7 @@ public interface DealController {
                     content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
-    ResponseEntity<Void> selectOfferForDeal(
+    ResponseEntity<StatementDto> selectOfferForDeal(
             @Valid @RequestBody LoanOfferDto request);
 
     @PostMapping("/calculate/{statementId}")
@@ -65,7 +66,7 @@ public interface DealController {
                     content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
-    ResponseEntity<Void> registrationDealAndCountCredit(
+    ResponseEntity<StatementDto> registrationDealAndCountCredit(
             @Valid @RequestBody FinishRegistrationRequestDto request,
             @PathVariable UUID statementId);
 }
