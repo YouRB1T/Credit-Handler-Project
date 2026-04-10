@@ -1,6 +1,7 @@
-package com.credithandler.api.dto;
+package com.credithandler.api.dto.error;
 
 import lombok.Getter;
+
 import java.time.LocalDateTime;
 
 @Getter

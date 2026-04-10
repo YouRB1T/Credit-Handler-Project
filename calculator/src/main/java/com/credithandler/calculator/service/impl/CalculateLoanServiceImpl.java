@@ -18,7 +18,6 @@ public class CalculateLoanServiceImpl implements CalculateLoanService {
     private final CalculateMonthlyPaymentService monthlyPaymentCalculator;
     private final CalculateRateService rateCalculator;
 
-    //TODO: StatementId пока null, исправить позже
     /*
     Логика кредитного предложения. Переменные: сумма кредита, срок кредита, есть ли страхование у клиента, есть ли заработок у клиента
     От срока не зависит

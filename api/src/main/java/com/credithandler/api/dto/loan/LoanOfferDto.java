@@ -8,6 +8,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 @AllArgsConstructor
 public class LoanOfferDto {
     private UUID statementId;

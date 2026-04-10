@@ -4,12 +4,12 @@ import com.credithandler.api.dto.model.EmploymentPosition;
 import com.credithandler.api.dto.model.EmploymentStatus;
 import com.credithandler.api.dto.model.Gender;
 import com.credithandler.api.dto.model.MaritalStatus;
+import com.credithandler.calculator.config.ErrorProperties;
+import com.credithandler.calculator.config.LoanProperties;
+import com.credithandler.calculator.config.ScoringProperties;
 import com.credithandler.api.dto.calc.EmploymentDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
-import com.credithandler.api.dto.BusinessException;
-import com.credithandler.calculator.config.ErrorPropertiesITest;
-import com.credithandler.calculator.config.LoanPropertiesTest;
-import com.credithandler.calculator.config.ScoringPropertiesTest;
+import com.credithandler.calculator.exception.BusinessException;
 import com.credithandler.calculator.service.impl.CalculateRateServiceImpl;
 import com.credithandler.calculator.utils.TestDataFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
@@ -31,27 +32,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
+@TestPropertySource(locations = "classpath:application.properties")
 @DisplayName("Тестирование CalculateRateServiceImpl")
 class CalculateRateServiceImplTest {
 
     @Autowired
-    private ErrorPropertiesITest errorProperties;
+    private ErrorProperties errorProperties;
 
     @Autowired
-    private LoanPropertiesTest loanProperties;
+    private LoanProperties loanProperties;
 
     @Autowired
-    private ScoringPropertiesTest scoringProperties;
+    private ScoringProperties scoringProperties;
 
     @Autowired
     private CalculateRateServiceImpl calculateRateService;
-
-    @Test
-    void debugProperties() {
-        // Проверочный тест: если здесь null, значит файл реально не читается
-        System.out.println("DEBUG RATE: " + scoringProperties.getMaxSalaryMultiple());
-        assertThat(scoringProperties.getMaxSalaryMultiple()).isNotNull();
-    }
 
     @Test
     @DisplayName("Расчет ставки прескоринга со всеми опциями")
@@ -102,15 +97,15 @@ class CalculateRateServiceImplTest {
     @DisplayName("ДУстановка ставки в 0% если она стала отрицательной")
     void calculatePrescoringRate_shouldSetZeroRateWhenNegative() {
 
-        ErrorPropertiesITest errorProperties = new ErrorPropertiesITest();
+        ErrorProperties errorProperties = new ErrorProperties();
 
-        LoanPropertiesTest negativeProps = new LoanPropertiesTest();
+        LoanProperties negativeProps = new LoanProperties();
         negativeProps.setBaseInterest(new BigDecimal("5.0"));
         negativeProps.setInsuranceDecrease(new BigDecimal("10.0"));
         negativeProps.setSalaryDecrease(new BigDecimal("5.0"));
 
         CalculateRateServiceImpl serviceWithNegative =
-                new CalculateRateServiceImpl(negativeProps, scoringProperties);
+                new CalculateRateServiceImpl(negativeProps, scoringProperties, errorProperties);
 
         BigDecimal result = serviceWithNegative.calculatePrescoringRate(true, true);
 
@@ -205,7 +200,7 @@ class CalculateRateServiceImplTest {
         data.getEmployment().setEmploymentStatus(EmploymentStatus.SELF_EMPLOYED);
 
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(Gender.FEMALE);
+        data.setGender(Gender.MALE);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
@@ -225,7 +220,7 @@ class CalculateRateServiceImplTest {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setEmploymentStatus(EmploymentStatus.COMPANY_OWNER);
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(Gender.FEMALE);
+        data.setGender(Gender.MALE);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
@@ -244,7 +239,7 @@ class CalculateRateServiceImplTest {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
         data.setMaritalStatus(MaritalStatus.DEFAULT);
-        data.setGender(Gender.FEMALE);
+        data.setGender(Gender.MALE);
         data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
@@ -252,6 +247,133 @@ class CalculateRateServiceImplTest {
         BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
         if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
         if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
+
+        assertThat(result).isEqualByComparingTo(expected);
+    }
+
+    @Test
+    @DisplayName("countOfEmploymentStatus: null статус - должен выбрасывать BusinessException")
+    void countOfEmploymentStatus_withNullStatus_shouldThrowBusinessException() {
+
+        ScoringDataDto data = TestDataFactory.createValidScoringData();
+        data.getEmployment().setEmploymentStatus(null);
+        data.setMaritalStatus(null);
+        data.setGender(null);
+        data.getEmployment().setPosition(null);
+
+        assertThatThrownBy(() -> calculateRateService.calculateScoringRate(data))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    @DisplayName("countOfPosition: middle manager - скидка")
+    void countOfPosition_withMiddleManager_shouldDecreaseRate() {
+
+        ScoringDataDto data = TestDataFactory.createValidScoringData();
+        data.getEmployment().setPosition(EmploymentPosition.MIDDLE_MANAGER);
+        data.setMaritalStatus(MaritalStatus.DEFAULT);
+        data.setGender(Gender.MALE);
+        data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
+
+        BigDecimal result = calculateRateService.calculateScoringRate(data);
+
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
+        if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
+        if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
+        expected = expected.subtract(scoringProperties.getMiddleManagerDecrease());
+
+        assertThat(result).isEqualByComparingTo(expected);
+    }
+
+    @Test
+    @DisplayName("countOfPosition: top manager - скидка")
+    void countOfPosition_withTopManager_shouldDecreaseRate() {
+        ScoringDataDto data = TestDataFactory.createValidScoringData();
+        data.getEmployment().setPosition(EmploymentPosition.TOP_MANAGER);
+        data.setMaritalStatus(MaritalStatus.DEFAULT);
+        data.setGender(Gender.MALE);
+        data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
+
+        BigDecimal result = calculateRateService.calculateScoringRate(data);
+
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
+        if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
+        if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
+        expected = expected.subtract(scoringProperties.getTopManagerDecrease());
+
+        assertThat(result).isEqualByComparingTo(expected);
+    }
+
+    @Test
+    @DisplayName("countOfPosition: null позиция - должен выбрасывать BusinessException")
+    void countOfPosition_withNullPosition_shouldThrowBusinessException() {
+
+        ScoringDataDto data = TestDataFactory.createValidScoringData();
+        data.getEmployment().setPosition(null);
+        data.setMaritalStatus(null);
+        data.setGender(null);
+        data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
+
+        assertThatThrownBy(() -> calculateRateService.calculateScoringRate(data))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    @DisplayName("countOfMaritalStatus: married - скидка")
+    void countOfMaritalStatus_withMarried_shouldDecreaseRate() {
+
+        ScoringDataDto data = TestDataFactory.createValidScoringData();
+        data.setMaritalStatus(MaritalStatus.MARRIED);
+        data.setGender(Gender.MALE);
+        data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
+        data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
+
+        BigDecimal result = calculateRateService.calculateScoringRate(data);
+
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
+        if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
+        if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
+        expected = expected.subtract(scoringProperties.getMarriedDecrease());
+
+        assertThat(result).isEqualByComparingTo(expected);
+    }
+
+    @Test
+    @DisplayName("countOfMaritalStatus: divorced - повышение")
+    void countOfMaritalStatus_withDivorced_shouldIncreaseRate() {
+
+        ScoringDataDto data = TestDataFactory.createValidScoringData();
+        data.setMaritalStatus(MaritalStatus.DIVORCED);
+        data.setGender(Gender.MALE);
+        data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
+        data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
+
+        BigDecimal result = calculateRateService.calculateScoringRate(data);
+
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(3));
+        if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
+        if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
+        expected = expected.add(scoringProperties.getDivorcedIncrease());
+
+        assertThat(result).isEqualByComparingTo(expected);
+    }
+
+    @Test
+    @DisplayName("countOfMaritalStatus: single - повышение")
+    void countOfMaritalStatus_withSingle_shouldIncreaseRateByOne() {
+
+        ScoringDataDto data = TestDataFactory.createValidScoringData();
+        data.setMaritalStatus(MaritalStatus.SINGLE);
+        data.setGender(Gender.MALE);
+        data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
+        data.getEmployment().setPosition(EmploymentPosition.EMPLOYER);
+
+        BigDecimal result = calculateRateService.calculateScoringRate(data);
+
+        BigDecimal expected = loanProperties.getBaseInterest().subtract(new BigDecimal(4));
+        if (data.getIsInsuranceEnabled()) expected = expected.subtract(loanProperties.getInsuranceDecrease());
+        if (data.getIsSalaryClient()) expected = expected.subtract(loanProperties.getSalaryDecrease());
+        expected = expected.add(new BigDecimal("1"));
 
         assertThat(result).isEqualByComparingTo(expected);
     }
@@ -459,13 +581,13 @@ class CalculateRateServiceImplTest {
         data.setBirthdate(LocalDate.now().minusYears(35));
         data.getEmployment().setPosition(EmploymentPosition.TOP_MANAGER);
 
-        LoanPropertiesTest smallBaseProps = new LoanPropertiesTest();
+        LoanProperties smallBaseProps = new LoanProperties();
         smallBaseProps.setBaseInterest(new BigDecimal("5.0"));
         smallBaseProps.setInsuranceDecrease(loanProperties.getInsuranceDecrease());
         smallBaseProps.setSalaryDecrease(loanProperties.getSalaryDecrease());
 
         CalculateRateServiceImpl serviceWithSmallBase =
-                new CalculateRateServiceImpl(smallBaseProps, scoringProperties);
+                new CalculateRateServiceImpl(smallBaseProps, scoringProperties, errorProperties);
 
         BigDecimal result = serviceWithSmallBase.calculateScoringRate(data);
 
@@ -522,6 +644,7 @@ class CalculateRateServiceImplTest {
         data.setBirthdate(LocalDate.now().minusYears(30));
         data.setIsInsuranceEnabled(false);
         data.setIsSalaryClient(false);
+        data.setGender(Gender.MALE);
 
         EmploymentDto employment = new EmploymentDto();
         employment.setEmploymentStatus(EmploymentStatus.EMPLOYED);
@@ -531,7 +654,6 @@ class CalculateRateServiceImplTest {
         employment.setPosition(EmploymentPosition.EMPLOYER);
         data.setMaritalStatus(MaritalStatus.DEFAULT);
         data.setEmployment(employment);
-        data.setGender(Gender.FEMALE);
 
         BigDecimal result = calculateRateService.calculateScoringRate(data);
 

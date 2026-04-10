@@ -1,8 +1,8 @@
 package com.credithandler.api.controller.calculator;
 
-import com.credithandler.api.dto.BusinessException;
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,11 +15,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@RequestMapping("/calculator")
 @Tag(name = "Сервис вычисления кредитной заявки и возможных предложений",
         description = "Сервис предоставляет возможность вычисления кредитного предложения на основе данных скоринга," +
                 "а также предоставление нескольких кредитных предложений на основе данных клиента")
@@ -37,7 +35,7 @@ public interface CalculatorController {
                     content = @Content(schema = @Schema(implementation = BusinessException.class))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
-    ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(LoanStatementRequestDto request);
+    ResponseEntity<List<LoanOfferDto>> provisionLoanOffers(@Valid @RequestBody LoanStatementRequestDto request);
 
     @PostMapping("/calc")
     @Operation(

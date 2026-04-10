@@ -9,6 +9,7 @@ import java.util.List;
 @Setter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 public class CreditDto {
     private BigDecimal amount;
     private Integer term;
