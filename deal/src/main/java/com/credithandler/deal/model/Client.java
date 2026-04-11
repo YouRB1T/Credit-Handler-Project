@@ -31,7 +31,9 @@ public class Client {
     private String middleName;
     private LocalDate birthdate;
     private String email;
+    @Enumerated(EnumType.STRING)
     private Gender gender;
+    @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
     private Integer dependentAmount;
     @JdbcTypeCode(SqlTypes.JSON)

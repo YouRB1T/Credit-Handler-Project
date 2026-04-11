@@ -18,5 +18,6 @@ public class HistoryStatus {
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
     private LocalDateTime timestamp;
+    @Enumerated(EnumType.STRING)
     private ChangeType changeType;
 }

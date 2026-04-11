@@ -20,21 +20,21 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public List<LoanOfferDto> prescoring(LoanStatementRequestDto requestDto) {
-        log.info(">> prescoring, request: {}", requestDto);
+        log.info(">> prescoring: {}", requestDto);
 
         List<LoanOfferDto> offers = dealClient.calculateStatements(requestDto).getBody();
 
-        log.info("<< prescoring, offers count: {}", offers != null ? offers.size() : 0);
+        log.info("<< prescoring: {}", offers != null ? offers.size() : 0);
         return offers;
     }
 
     @Override
     public StatementDto selectOffer(LoanOfferDto offerDto) {
-        log.info(">> selectOffer, offer: {}", offerDto);
+        log.info(">> selectOffer: {}", offerDto);
 
         StatementDto selectedStatement = dealClient.selectOfferForDeal(offerDto).getBody();
 
-        log.info("<< selectOffer, statementId: {}",
+        log.info("<< selectOffer: {}",
                 selectedStatement != null ? selectedStatement.getStatementId() : "null");
         return selectedStatement;
     }

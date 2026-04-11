@@ -34,7 +34,7 @@
         @JdbcTypeCode(SqlTypes.JSON)
         private List<PaymentScheduleElementDto> paymentSchedule;
         private Boolean insuranceEnabled;
-        private boolean salaryClient;
+        private Boolean salaryClient;
         @Enumerated(EnumType.STRING)
         private CreditStatus creditStatus;
     }
