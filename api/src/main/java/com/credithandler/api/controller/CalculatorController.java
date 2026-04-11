@@ -1,4 +1,4 @@
-package com.credithandler.api.controller.calculator;
+package com.credithandler.api.controller;
 
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;

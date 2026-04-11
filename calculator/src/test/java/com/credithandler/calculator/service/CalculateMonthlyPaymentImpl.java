@@ -1,6 +1,6 @@
 package com.credithandler.calculator.service;
 
-import com.credithandler.calculator.exception.BusinessException;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.calculator.service.impl.CalculateMonthlyPaymentImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

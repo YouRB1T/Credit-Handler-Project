@@ -1,4 +1,4 @@
-package com.credithandler.api.controller.deal;
+package com.credithandler.api.controller;
 
 import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 import java.util.UUID;
 
-@RequestMapping("/deal")
 @Tag(name = "Сервис вычисления кредитной сделки и расчет возможных предложений",
         description = "Сервис предоставляет возможность вычисления кредитной сделки на основе данных клиента.")
 public interface DealController {

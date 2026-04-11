@@ -1,6 +1,6 @@
 package com.credithandler.deal.client;
 
-import com.credithandler.api.controller.calculator.CalculatorController;
+import com.credithandler.api.controller.CalculatorController;
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
