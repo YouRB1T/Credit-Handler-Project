@@ -8,5 +8,4 @@ import org.mapstruct.Mapper;
 public interface HistoryStatusMapper {
 
     HistoryStatusDto toDto(HistoryStatus entity);
-
 }

@@ -72,7 +72,7 @@ public class DealServiceImpl implements DealService {
         log.debug("Статус обновлён: {} -> {}", oldStatus, ApplicationStatus.APPROVED);
 
         HistoryStatus history = HistoryStatus.builder()
-                .status(ApplicationStatus.APPROVED.toString())
+                .status(ApplicationStatus.APPROVED)
                 .timestamp(LocalDateTime.now())
                 .changeType(ChangeType.MANUAL)
                 .build();
@@ -165,10 +165,12 @@ public class DealServiceImpl implements DealService {
         statement.setStatus(ApplicationStatus.CC_APPROVED);
 
         HistoryStatus history = HistoryStatus.builder()
-                .status(ApplicationStatus.CC_APPROVED.toString())
+                .status(ApplicationStatus.CC_APPROVED)
                 .timestamp(LocalDateTime.now())
                 .changeType(ChangeType.AUTOMATIC)
                 .build();
+
+        log.debug("Добавлена запись в историю: {}", history.toString());
         statement.getHistoryStatus().add(history);
 
         Statement savedStatement = statementRepository.save(statement);
