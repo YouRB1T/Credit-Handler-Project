@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <changeSet id="1" author="yourb1t">
+    <changeSet id="create-credit-table" author="yourb1t">
         <createTable tableName="credit">
             <column name="credit_id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
@@ -24,7 +24,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2" author="yourb1t">
+    <changeSet id="create-client-table" author="yourb1t">
         <createTable tableName="client">
             <column name="client_id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
@@ -43,7 +43,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="3" author="yourb1t">
+    <changeSet id="create-statement-table" author="yourb1t">
         <createTable tableName="statement">
             <column name="statement_id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
@@ -59,7 +59,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="4" author="yourb1t">
+    <changeSet id="add-statement-foreign-keys" author="yourb1t">
         <addForeignKeyConstraint baseColumnNames="client_id"
                                  baseTableName="statement"
                                  constraintName="fk_statement_client"

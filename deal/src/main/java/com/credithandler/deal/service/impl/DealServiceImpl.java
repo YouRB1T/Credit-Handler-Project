@@ -50,7 +50,7 @@ public class DealServiceImpl implements DealService {
 
         UUID statementId = request.getStatementId();
 
-        Statement statement = statementRepository.findById(statementId)
+        Statement statement = statementRepository.findByIdWithLock(statementId)
                 .orElseThrow(() -> {
                     log.error("Заявка не найдена: {}", statementId);
                     return BusinessException.of(

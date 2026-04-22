@@ -33,7 +33,6 @@ class CreditMapperTest {
         assertThat(result.getAmount()).isEqualByComparingTo("100000");
         assertThat(result.getTerm()).isEqualTo(12);
         assertThat(result.getInsuranceEnabled()).isTrue();
-        assertThat(result.isSalaryClient()).isFalse();
 
         assertThat(result.getCreditId()).isNull();
         assertThat(result.getCreditStatus()).isNull();

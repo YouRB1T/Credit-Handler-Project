@@ -89,7 +89,7 @@ public class DealServiceImplTest {
     @DisplayName("Успешный выбор предложения")
     void selectOffer_success() {
 
-        when(statementRepository.findById(statementId))
+        when(statementRepository.findByIdWithLock(statementId))
                 .thenReturn(Optional.of(statement));
 
         dealService.selectOfferForDeal(offer);
@@ -105,7 +105,7 @@ public class DealServiceImplTest {
     @DisplayName("Ошибка если заявка не найдена")
     void selectOffer_statementNotFound() {
 
-        when(statementRepository.findById(statementId))
+        when(statementRepository.findByIdWithLock(statementId))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> dealService.selectOfferForDeal(offer))
@@ -119,7 +119,7 @@ public class DealServiceImplTest {
 
         statement.setStatus(ApplicationStatus.APPROVED);
 
-        when(statementRepository.findById(statementId))
+        when(statementRepository.findByIdWithLock(statementId))
                 .thenReturn(Optional.of(statement));
 
         assertThatThrownBy(() -> dealService.selectOfferForDeal(offer))

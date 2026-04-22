@@ -23,7 +23,7 @@ import java.util.List;
         description = "Обработка прескоринга и выбор конкретных кредитных предложений")
 public interface StatementController {
 
-    @PostMapping()
+    @PostMapping
     @Operation(
             summary = "Прескоринг и расчет кредитных предложений",
             description = "Принимает первичные данные клиента, создает заявку и возвращает список доступных предложений."
