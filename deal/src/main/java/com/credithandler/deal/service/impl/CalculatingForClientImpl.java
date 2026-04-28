@@ -16,12 +16,12 @@ import java.util.List;
 public class CalculatingForClientImpl implements CalculatingForClient {
     private final CalculatorClient calculatorClient;
 
-    public List<LoanOfferDto> getLoanOffers(LoanStatementRequestDto request) {
-        log.info(">> getLoanOffers, request: {}", request);
+        public List<LoanOfferDto> getLoanOffers(LoanStatementRequestDto request) {
+            log.info(">> getLoanOffers, request: {}", request);
 
-        List<LoanOfferDto> offers = calculatorClient.getLoanOffers(request);
+            List<LoanOfferDto> offers = calculatorClient.getLoanOffers(request);
 
-        log.info("<< getLoanOffers, offers count: {}", offers);
-        return offers;
-    }
+            log.info("<< getLoanOffers, offers count: {}", offers);
+            return offers;
+        }
 }
