@@ -1,5 +1,7 @@
 package com.credithandler.deal.service.impl;
 
+import com.credithandler.api.dto.dossier.EmailMessage;
+import com.credithandler.api.dto.dossier.EmailTheme;
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
@@ -17,6 +19,7 @@ import com.credithandler.deal.repository.ClientRepository;
 import com.credithandler.deal.repository.CreditRepository;
 import com.credithandler.deal.repository.StatementRepository;
 import com.credithandler.deal.service.DealService;
+import com.credithandler.deal.service.EmailMessageProducer;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +45,7 @@ public class DealServiceImpl implements DealService {
 
     private final CalculatorClient calculatorClient;
     private final StatementMapper statementMapper;
+    private final EmailMessageProducer emailMessageProducer;
 
     @Override
     @Transactional
@@ -85,6 +89,20 @@ public class DealServiceImpl implements DealService {
 
         statementRepository.save(statement);
         log.debug("Заявка сохранена");
+
+        Client client = clientRepository.findById(statement.getClientId())
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.CLIENT_NOT_FOUND,
+                        String.format(ErrorConstants.CLIENT_NOT_FOUND_DESC, statement.getClientId())
+                ));
+
+        EmailMessage emailMessage = new EmailMessage(
+                client.getEmail(),
+                EmailTheme.FINISH_REGISTRATION,
+                statement.getStatementId(),
+                "Для продолжения оформления кредита завершите регистрацию."
+        );
+        emailMessageProducer.sendFinishRegistrationMessage(emailMessage);
 
         log.info("<< selectOfferForDeal, statementId: {}, status: {}", statementId, statement.getStatus());
         return statementMapper.toDto(statement);
