@@ -2,6 +2,7 @@ package com.credithandler.deal.service.impl;
 
 import com.credithandler.api.dto.dossier.EmailMessage;
 import com.credithandler.api.dto.dossier.EmailTheme;
+import com.credithandler.api.dto.dossier.SesCodeRequestDto;
 import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.credithandler.deal.model.enums.ApplicationStatus.PREAPPROVAL;
 
@@ -196,5 +198,118 @@ public class DealServiceImpl implements DealService {
         log.info("<< registrationDealAndCountCredit, creditId: {}", savedCredit.getCreditId());
 
         return statementMapper.toDto(savedStatement);
+    }
+
+    @Override
+    @Transactional
+    public StatementDto sendDocuments(UUID statementId) {
+        log.info(">> sendDocuments, statementId: {}", statementId);
+
+        Statement statement = statementRepository.findByIdWithLock(statementId)
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.STATEMENT_NOT_FOUND,
+                        String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
+                ));
+
+        if (statement.getStatus() != ApplicationStatus.CC_APPROVED
+                && statement.getStatus() != ApplicationStatus.DOCUMENT_CREATED) {
+            throw BusinessException.of(
+                    ErrorConstants.INVALID_STATEMENT_STATUS,
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, statement.getStatus())
+            );
+        }
+
+        Client client = clientRepository.findById(statement.getClientId())
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.CLIENT_NOT_FOUND,
+                        String.format(ErrorConstants.CLIENT_NOT_FOUND_DESC, statement.getClientId())
+                ));
+
+        statement.setStatus(ApplicationStatus.PREPARE_DOCUMENTS);
+        statement.getHistoryStatus().add(HistoryStatus.builder()
+                .status(ApplicationStatus.PREPARE_DOCUMENTS)
+                .timestamp(LocalDateTime.now())
+                .changeType(ChangeType.MANUAL)
+                .build());
+
+        Statement savedStatement = statementRepository.save(statement);
+        StatementDto statementDto = statementMapper.toDto(savedStatement);
+        statementDto.setEmail(client.getEmail());
+
+        emailMessageProducer.sendDocumentsMessage(statementDto);
+
+        log.info("<< sendDocuments, statementId: {}, status: {}", statementId, statementDto.getStatus());
+        return statementDto;
+    }
+
+    @Override
+    @Transactional
+    public StatementDto signDocuments(UUID statementId) {
+        log.info(">> signDocuments, statementId: {}", statementId);
+
+        Statement statement = statementRepository.findByIdWithLock(statementId)
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.STATEMENT_NOT_FOUND,
+                        String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
+                ));
+
+        if (statement.getStatus() != ApplicationStatus.PREPARE_DOCUMENTS
+                && statement.getStatus() != ApplicationStatus.DOCUMENT_CREATED) {
+            throw BusinessException.of(
+                    ErrorConstants.INVALID_STATEMENT_STATUS,
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, statement.getStatus())
+            );
+        }
+
+        statement.setSesCode(generateSesCode());
+        statement.setStatus(ApplicationStatus.DOCUMENT_CREATED);
+        statement.getHistoryStatus().add(HistoryStatus.builder()
+                .status(ApplicationStatus.DOCUMENT_CREATED)
+                .timestamp(LocalDateTime.now())
+                .changeType(ChangeType.MANUAL)
+                .build());
+
+        Statement savedStatement = statementRepository.save(statement);
+        StatementDto statementDto = statementMapper.toDto(savedStatement);
+
+        log.info("<< signDocuments, statementId: {}, status: {}", statementId, statementDto.getStatus());
+        return statementDto;
+    }
+
+    @Override
+    @Transactional
+    public StatementDto codeDocuments(UUID statementId, SesCodeRequestDto request) {
+        log.info(">> codeDocuments, statementId: {}", statementId);
+
+        Statement statement = statementRepository.findByIdWithLock(statementId)
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.STATEMENT_NOT_FOUND,
+                        String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
+                ));
+
+        if (statement.getSesCode() == null || !statement.getSesCode().equals(request.getSesCode())) {
+            throw BusinessException.of(
+                    "Некорректный SES-код",
+                    "Переданный код подтверждения не совпадает с сохраненным кодом заявки"
+            );
+        }
+
+        statement.setSignDate(LocalDateTime.now());
+        statement.setStatus(ApplicationStatus.DOCUMENT_SIGNED);
+        statement.getHistoryStatus().add(HistoryStatus.builder()
+                .status(ApplicationStatus.DOCUMENT_SIGNED)
+                .timestamp(LocalDateTime.now())
+                .changeType(ChangeType.MANUAL)
+                .build());
+
+        Statement savedStatement = statementRepository.save(statement);
+        StatementDto statementDto = statementMapper.toDto(savedStatement);
+
+        log.info("<< codeDocuments, statementId: {}, status: {}", statementId, statementDto.getStatus());
+        return statementDto;
+    }
+
+    private String generateSesCode() {
+        return String.valueOf(ThreadLocalRandom.current().nextInt(1000, 10000));
     }
 }

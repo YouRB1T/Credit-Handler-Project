@@ -1,7 +1,7 @@
 package com.credithandler.deal.config;
 
 import com.credithandler.api.dto.dossier.EmailMessage;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.credithandler.api.dto.model.StatementDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,5 +33,19 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, EmailMessage> emailMessageKafkaTemplate() {
         return new KafkaTemplate<>(emailMessageProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, StatementDto> statementDtoProducerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, StatementDto> statementDtoKafkaTemplate() {
+        return new KafkaTemplate<>(statementDtoProducerFactory());
     }
 }
