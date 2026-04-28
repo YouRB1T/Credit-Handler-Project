@@ -3,7 +3,6 @@ package com.credithandler.deal.service;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
-import com.credithandler.deal.model.Statement;
 
 import java.util.UUID;
 
