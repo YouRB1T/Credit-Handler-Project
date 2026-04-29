@@ -23,7 +23,11 @@ import java.util.List;
 public class EmailMessageServiceImpl implements EmailMessageService {
 
     private static final String FINISH_REGISTRATION_SUBJECT = "Завершение регистрации кредитной заявки";
+    private static final String CREATE_DOCUMENTS_SUBJECT = "Формирование кредитных документов";
     private static final String SEND_DOCUMENTS_SUBJECT = "Кредитные документы по вашей заявке";
+    private static final String SEND_SES_SUBJECT = "Код подтверждения подписания документов";
+    private static final String CREDIT_ISSUED_SUBJECT = "Кредит выдан";
+    private static final String STATEMENT_DENIED_SUBJECT = "Отказ по кредитной заявке";
 
     private final JavaMailSender javaMailSender;
     private final DocumentService documentService;
@@ -48,14 +52,65 @@ public class EmailMessageServiceImpl implements EmailMessageService {
     }
 
     @Override
+    public void processCreateDocuments(StatementDto statement) {
+        log.info(">> processCreateDocuments, statement: {}", statement);
+
+        documentService.createCreditDocuments(statement);
+
+        log.info("<< processCreateDocuments, documents created, statementId: {}", statement.getStatementId());
+    }
+
+    @Override
     public void processSendDocuments(StatementDto statement) {
         log.info(">> processSendDocuments, statement: {}", statement);
 
-        List<GeneratedDocument> documents = documentService.generateCreditDocuments(statement);
+        List<GeneratedDocument> documents = documentService.getCreditDocuments(statement);
         sendDocumentsEmail(statement, documents);
 
         log.info("<< processSendDocuments, email sent to: {}, statementId: {}, attachments count: {}",
                 statement.getEmail(), statement.getStatementId(), documents.size());
+    }
+
+    @Override
+    public void processSendSes(EmailMessage message) {
+        log.info(">> processSendSes, message: {}", message);
+
+        sendSimpleEmail(
+                message,
+                SEND_SES_SUBJECT,
+                buildSimpleText(message, message.getText())
+        );
+
+        log.info("<< processSendSes, email sent to: {}, statementId: {}",
+                message.getAddress(), message.getStatementId());
+    }
+
+    @Override
+    public void processCreditIssued(EmailMessage message) {
+        log.info(">> processCreditIssued, message: {}", message);
+
+        sendSimpleEmail(
+                message,
+                CREDIT_ISSUED_SUBJECT,
+                buildSimpleText(message, "Поздравляем, кредит успешно выдан.")
+        );
+
+        log.info("<< processCreditIssued, email sent to: {}, statementId: {}",
+                message.getAddress(), message.getStatementId());
+    }
+
+    @Override
+    public void processStatementDenied(EmailMessage message) {
+        log.info(">> processStatementDenied, message: {}", message);
+
+        sendSimpleEmail(
+                message,
+                STATEMENT_DENIED_SUBJECT,
+                buildSimpleText(message, "По вашей кредитной заявке принято отрицательное решение.")
+        );
+
+        log.info("<< processStatementDenied, email sent to: {}, statementId: {}",
+                message.getAddress(), message.getStatementId());
     }
 
     private String buildFinishRegistrationText(EmailMessage message) {
@@ -71,6 +126,26 @@ public class EmailMessageServiceImpl implements EmailMessageService {
                 """.formatted(message.getStatementId(), message.getText());
     }
 
+    private void sendSimpleEmail(EmailMessage message, String subject, String text) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setFrom(mailFrom);
+        mailMessage.setTo(message.getAddress());
+        mailMessage.setSubject(subject);
+        mailMessage.setText(text);
+
+        javaMailSender.send(mailMessage);
+    }
+
+    private String buildSimpleText(EmailMessage message, String body) {
+        return """
+                Здравствуйте!
+
+                %s
+
+                Номер заявки: %s
+                """.formatted(body, message.getStatementId());
+    }
+
     private void sendDocumentsEmail(StatementDto statement, List<GeneratedDocument> documents) {
         try {
             var mimeMessage = javaMailSender.createMimeMessage();
@@ -82,7 +157,7 @@ public class EmailMessageServiceImpl implements EmailMessageService {
 
             for (GeneratedDocument document : documents) {
                 helper.addAttachment(
-                        document.fileName(),
+                        document.attachmentName(),
                         new ByteArrayResource(document.content()),
                         document.contentType()
                 );

@@ -195,9 +195,13 @@ public class DealServiceImpl implements DealService {
 
         Statement savedStatement = statementRepository.save(statement);
 
+        StatementDto statementDto = statementMapper.toDto(savedStatement);
+        statementDto.setEmail(client.getEmail());
+        emailMessageProducer.sendCreateDocumentsMessage(statementDto);
+
         log.info("<< registrationDealAndCountCredit, creditId: {}", savedCredit.getCreditId());
 
-        return statementMapper.toDto(savedStatement);
+        return statementDto;
     }
 
     @Override
@@ -272,6 +276,20 @@ public class DealServiceImpl implements DealService {
         Statement savedStatement = statementRepository.save(statement);
         StatementDto statementDto = statementMapper.toDto(savedStatement);
 
+        Client client = clientRepository.findById(statement.getClientId())
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.CLIENT_NOT_FOUND,
+                        String.format(ErrorConstants.CLIENT_NOT_FOUND_DESC, statement.getClientId())
+                ));
+
+        EmailMessage emailMessage = new EmailMessage(
+                client.getEmail(),
+                EmailTheme.SEND_SES,
+                savedStatement.getStatementId(),
+                "Код подтверждения подписания документов: %s".formatted(savedStatement.getSesCode())
+        );
+        emailMessageProducer.sendSesMessage(emailMessage);
+
         log.info("<< signDocuments, statementId: {}, status: {}", statementId, statementDto.getStatus());
         return statementDto;
     }
@@ -304,6 +322,20 @@ public class DealServiceImpl implements DealService {
 
         Statement savedStatement = statementRepository.save(statement);
         StatementDto statementDto = statementMapper.toDto(savedStatement);
+
+        Client client = clientRepository.findById(statement.getClientId())
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.CLIENT_NOT_FOUND,
+                        String.format(ErrorConstants.CLIENT_NOT_FOUND_DESC, statement.getClientId())
+                ));
+
+        EmailMessage emailMessage = new EmailMessage(
+                client.getEmail(),
+                EmailTheme.CREDIT_ISSUED,
+                savedStatement.getStatementId(),
+                "Кредитное предложение успешно сформировано и выдано."
+        );
+        emailMessageProducer.sendCreditIssuedMessage(emailMessage);
 
         log.info("<< codeDocuments, statementId: {}, status: {}", statementId, statementDto.getStatus());
         return statementDto;

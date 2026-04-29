@@ -1,51 +1,113 @@
 package com.credithandler.dossier.service.impl;
 
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.dossier.model.GeneratedDocument;
 import com.credithandler.dossier.service.DocumentService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
 public class DocumentServiceImpl implements DocumentService {
 
     private static final String TEXT_CONTENT_TYPE = "text/plain";
+    private static final String CONTRACT_BASE_NAME = "credit-contract";
+    private static final String PAYMENT_SCHEDULE_BASE_NAME = "payment-schedule";
+    private static final String INDIVIDUAL_CONDITIONS_BASE_NAME = "individual-conditions";
+
+    @Value("${dossier.documents.storage-path}")
+    private String storagePath;
 
     @Override
-    public List<GeneratedDocument> generateCreditDocuments(StatementDto statement) {
-        log.info(">> generateCreditDocuments, statementId: {}", statement.getStatementId());
+    public void createCreditDocuments(StatementDto statement) {
+        log.info(">> createCreditDocuments, statementId: {}", statement.getStatementId());
+
+        Path statementDirectory = getStatementDirectory(statement.getStatementId());
+        try {
+            Files.createDirectories(statementDirectory);
+            writeDocument(statementDirectory, statement, CONTRACT_BASE_NAME, buildCreditContract(statement));
+            writeDocument(statementDirectory, statement, PAYMENT_SCHEDULE_BASE_NAME, buildPaymentSchedule(statement));
+            writeDocument(statementDirectory, statement, INDIVIDUAL_CONDITIONS_BASE_NAME, buildIndividualConditions(statement));
+        } catch (IOException ex) {
+            throw BusinessException.of(
+                    "Ошибка формирования документов",
+                    "Не удалось сформировать документы по заявке %s".formatted(statement.getStatementId())
+            );
+        }
+
+        log.info("<< createCreditDocuments, statementId: {}", statement.getStatementId());
+    }
+
+    @Override
+    public List<GeneratedDocument> getCreditDocuments(StatementDto statement) {
+        log.info(">> getCreditDocuments, statementId: {}", statement.getStatementId());
+
+        Path statementDirectory = getStatementDirectory(statement.getStatementId());
+        if (!Files.exists(statementDirectory)) {
+            throw BusinessException.of(
+                    "Документы не найдены",
+                    "Документы по заявке %s еще не сформированы".formatted(statement.getStatementId())
+            );
+        }
 
         List<GeneratedDocument> documents = List.of(
-                createDocument(
-                        "credit-contract-%s.txt".formatted(statement.getStatementId()),
-                        buildCreditContract(statement)
-                ),
-                createDocument(
-                        "payment-schedule-%s.txt".formatted(statement.getStatementId()),
-                        buildPaymentSchedule(statement)
-                ),
-                createDocument(
-                        "individual-conditions-%s.txt".formatted(statement.getStatementId()),
-                        buildIndividualConditions(statement)
-                )
+                readDocument(statementDirectory, statement, CONTRACT_BASE_NAME),
+                readDocument(statementDirectory, statement, PAYMENT_SCHEDULE_BASE_NAME),
+                readDocument(statementDirectory, statement, INDIVIDUAL_CONDITIONS_BASE_NAME)
         );
 
-        log.info("<< generateCreditDocuments, documents count: {}", documents.size());
+        log.info("<< getCreditDocuments, documents count: {}", documents.size());
         return documents;
     }
 
-    private GeneratedDocument createDocument(String fileName, String content) {
-        return new GeneratedDocument(
-                fileName,
-                TEXT_CONTENT_TYPE,
-                content.getBytes(StandardCharsets.UTF_8)
+    private void writeDocument(Path statementDirectory, StatementDto statement, String baseName, String content)
+            throws IOException {
+        Files.writeString(
+                statementDirectory.resolve(buildStoredFileName(baseName, statement.getStatementId())),
+                content,
+                StandardCharsets.UTF_8
         );
+    }
+
+    private GeneratedDocument readDocument(Path statementDirectory, StatementDto statement, String baseName) {
+        String storedFileName = buildStoredFileName(baseName, statement.getStatementId());
+        Path documentPath = statementDirectory.resolve(storedFileName);
+        try {
+            return new GeneratedDocument(
+                    storedFileName,
+                    buildAttachmentName(baseName),
+                    TEXT_CONTENT_TYPE,
+                    Files.readAllBytes(documentPath)
+            );
+        } catch (IOException ex) {
+            throw BusinessException.of(
+                    "Документ не найден",
+                    "Не удалось прочитать документ %s по заявке %s".formatted(storedFileName, statement.getStatementId())
+            );
+        }
+    }
+
+    private Path getStatementDirectory(UUID statementId) {
+        return Path.of(storagePath).resolve(statementId.toString());
+    }
+
+    private String buildStoredFileName(String baseName, UUID statementId) {
+        return "%s-%s.txt".formatted(baseName, statementId);
+    }
+
+    private String buildAttachmentName(String baseName) {
+        return "%s.txt".formatted(baseName);
     }
 
     private String buildCreditContract(StatementDto statement) {

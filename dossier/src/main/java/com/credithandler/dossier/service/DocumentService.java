@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface DocumentService {
 
-    List<GeneratedDocument> generateCreditDocuments(StatementDto statement);
+    void createCreditDocuments(StatementDto statement);
+
+    List<GeneratedDocument> getCreditDocuments(StatementDto statement);
 }

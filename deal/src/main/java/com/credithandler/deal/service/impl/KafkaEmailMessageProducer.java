@@ -20,8 +20,20 @@ public class KafkaEmailMessageProducer implements EmailMessageProducer {
     @Value("${kafka.topic.finish-registration}")
     private String finishRegistrationTopic;
 
+    @Value("${kafka.topic.create-documents}")
+    private String createDocumentsTopic;
+
     @Value("${kafka.topic.send-documents}")
     private String sendDocumentsTopic;
+
+    @Value("${kafka.topic.send-ses}")
+    private String sendSesTopic;
+
+    @Value("${kafka.topic.credit-issued}")
+    private String creditIssuedTopic;
+
+    @Value("${kafka.topic.statement-denied}")
+    private String statementDeniedTopic;
 
     @Override
     public void sendFinishRegistrationMessage(EmailMessage message) {
@@ -34,6 +46,11 @@ public class KafkaEmailMessageProducer implements EmailMessageProducer {
     }
 
     @Override
+    public void sendCreateDocumentsMessage(StatementDto statement) {
+        sendStatementMessage(createDocumentsTopic, statement, "sendCreateDocumentsMessage");
+    }
+
+    @Override
     public void sendDocumentsMessage(StatementDto statement) {
         log.info(">> sendDocumentsMessage, statement: {}", statement);
 
@@ -41,5 +58,36 @@ public class KafkaEmailMessageProducer implements EmailMessageProducer {
 
         log.info("<< sendDocumentsMessage, topic: {}, statementId: {}",
                 sendDocumentsTopic, statement.getStatementId());
+    }
+
+    @Override
+    public void sendSesMessage(EmailMessage message) {
+        sendEmailMessage(sendSesTopic, message, "sendSesMessage");
+    }
+
+    @Override
+    public void sendCreditIssuedMessage(EmailMessage message) {
+        sendEmailMessage(creditIssuedTopic, message, "sendCreditIssuedMessage");
+    }
+
+    @Override
+    public void sendStatementDeniedMessage(EmailMessage message) {
+        sendEmailMessage(statementDeniedTopic, message, "sendStatementDeniedMessage");
+    }
+
+    private void sendEmailMessage(String topic, EmailMessage message, String methodName) {
+        log.info(">> {}, message: {}", methodName, message);
+
+        kafkaTemplate.send(topic, message.getStatementId().toString(), message);
+
+        log.info("<< {}, topic: {}, statementId: {}", methodName, topic, message.getStatementId());
+    }
+
+    private void sendStatementMessage(String topic, StatementDto statement, String methodName) {
+        log.info(">> {}, statement: {}", methodName, statement);
+
+        statementDtoKafkaTemplate.send(topic, statement.getStatementId().toString(), statement);
+
+        log.info("<< {}, topic: {}, statementId: {}", methodName, topic, statement.getStatementId());
     }
 }
