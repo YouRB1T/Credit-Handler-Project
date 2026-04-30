@@ -1,6 +1,6 @@
 package com.credithandler.deal.constants;
 
-public class ErrorConstants {
+public final class ErrorConstants {
 
     public static final String CLIENT_NOT_CREATED = "Клиент не был создан";
     public static final String CLIENT_NOT_CREATED_DESC = "Не удалось создать клиента по переданному запросу";
@@ -23,4 +23,6 @@ public class ErrorConstants {
     public static final String CREDIT_NOT_CALCULATED = "Ошибка расчёта кредита";
     public static final String CREDIT_NOT_CALCULATED_DESC = "Калькулятор не вернул данные по кредиту";
 
+    private ErrorConstants() {
+    }
 }

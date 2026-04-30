@@ -1,9 +1,6 @@
 package com.credithandler.calculator.constants;
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
-public class ErrorMessages {
+public final class ErrorMessages {
 
     public static final String ERROR_UNEMPLOYED_MESSAGE = "Клиент безработный - кредит не может быть выдан";
     public static final String ERROR_LOAN_AMOUNT_MESSAGE = "Сумма кредита превышает максимально допустимую на основе зарплаты";
@@ -25,4 +22,6 @@ public class ErrorMessages {
     public static final String ERROR_LOG_FEMALE_DISCOUNT = "Применена скидка для женщины {}-{} лет: -{}%";
     public static final String ERROR_LOG_MALE_DISCOUNT = "Применена скидка для мужчины {}-{} лет: -{}%";
     public static final String ERROR_LOG_NON_BINARY_INCREASE = "Применено повышение ставки для небинарных: +{}%";
+    private ErrorMessages() {
+    }
 }
