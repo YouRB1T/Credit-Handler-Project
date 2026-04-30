@@ -3,80 +3,113 @@ package com.credithandler.dossier.service.impl;
 import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.dossier.config.DocumentProperties;
 import com.credithandler.dossier.model.GeneratedDocument;
 import com.credithandler.dossier.service.DocumentService;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfWriter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static com.credithandler.dossier.constants.DocumentErrorConstants.DOCUMENTS_NOT_FOUND_ERROR;
+import static com.credithandler.dossier.constants.DocumentErrorConstants.DOCUMENTS_NOT_FOUND_ERROR_DESCRIPTION;
+import static com.credithandler.dossier.constants.DocumentErrorConstants.DOCUMENT_CREATION_ERROR;
+import static com.credithandler.dossier.constants.DocumentErrorConstants.DOCUMENT_CREATION_ERROR_DESCRIPTION;
+import static com.credithandler.dossier.constants.DocumentErrorConstants.DOCUMENT_NOT_FOUND_ERROR;
+import static com.credithandler.dossier.constants.DocumentErrorConstants.DOCUMENT_NOT_FOUND_ERROR_DESCRIPTION;
+import static com.credithandler.dossier.constants.DocumentErrorConstants.NOT_SPECIFIED;
+import static com.credithandler.dossier.constants.DocumentTextConstants.CLIENT_ID;
+import static com.credithandler.dossier.constants.DocumentTextConstants.CREATED_AT;
+import static com.credithandler.dossier.constants.DocumentTextConstants.CREDIT_CONTRACT_FOOTER;
+import static com.credithandler.dossier.constants.DocumentTextConstants.CREDIT_CONTRACT_TITLE;
+import static com.credithandler.dossier.constants.DocumentTextConstants.CREDIT_ID;
+import static com.credithandler.dossier.constants.DocumentTextConstants.CREDIT_TERM;
+import static com.credithandler.dossier.constants.DocumentTextConstants.INDIVIDUAL_CONDITIONS_FOOTER;
+import static com.credithandler.dossier.constants.DocumentTextConstants.INDIVIDUAL_CONDITIONS_TITLE;
+import static com.credithandler.dossier.constants.DocumentTextConstants.INSURANCE_ENABLED;
+import static com.credithandler.dossier.constants.DocumentTextConstants.INTEREST_RATE;
+import static com.credithandler.dossier.constants.DocumentTextConstants.MONTHLY_PAYMENT;
+import static com.credithandler.dossier.constants.DocumentTextConstants.PAYMENT_SCHEDULE_FOOTER;
+import static com.credithandler.dossier.constants.DocumentTextConstants.PAYMENT_SCHEDULE_TITLE;
+import static com.credithandler.dossier.constants.DocumentTextConstants.REQUESTED_AMOUNT;
+import static com.credithandler.dossier.constants.DocumentTextConstants.SALARY_CLIENT;
+import static com.credithandler.dossier.constants.DocumentTextConstants.STATEMENT_ID;
+import static com.credithandler.dossier.constants.DocumentTextConstants.STATEMENT_STATUS;
+import static com.credithandler.dossier.constants.DocumentTextConstants.TOTAL_AMOUNT;
+
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class DocumentServiceImpl implements DocumentService {
 
-    private static final String TEXT_CONTENT_TYPE = "text/plain";
-    private static final String CONTRACT_BASE_NAME = "credit-contract";
-    private static final String PAYMENT_SCHEDULE_BASE_NAME = "payment-schedule";
-    private static final String INDIVIDUAL_CONDITIONS_BASE_NAME = "individual-conditions";
+    private static final String LOG_CREATE_DOCUMENTS_IN = ">> createCreditDocuments, statementId: {}";
+    private static final String LOG_CREATE_DOCUMENTS_OUT = "<< createCreditDocuments, statementId: {}, directory: {}";
+    private static final String LOG_GET_DOCUMENTS_IN = ">> getCreditDocuments, statementId: {}";
+    private static final String LOG_GET_DOCUMENTS_OUT = "<< getCreditDocuments, documents count: {}, directory: {}";
 
-    @Value("${dossier.documents.storage-path}")
-    private String storagePath;
+    private final DocumentProperties documentProperties;
 
     @Override
     public void createCreditDocuments(StatementDto statement) {
-        log.info(">> createCreditDocuments, statementId: {}", statement.getStatementId());
+        log.info(LOG_CREATE_DOCUMENTS_IN, statement.getStatementId());
 
         Path statementDirectory = getStatementDirectory(statement.getStatementId());
         try {
             Files.createDirectories(statementDirectory);
-            writeDocument(statementDirectory, statement, CONTRACT_BASE_NAME, buildCreditContract(statement));
-            writeDocument(statementDirectory, statement, PAYMENT_SCHEDULE_BASE_NAME, buildPaymentSchedule(statement));
-            writeDocument(statementDirectory, statement, INDIVIDUAL_CONDITIONS_BASE_NAME, buildIndividualConditions(statement));
-        } catch (IOException ex) {
+            writeDocument(statementDirectory, statement, documentProperties.getContractBaseName(), buildCreditContract(statement));
+            writeDocument(statementDirectory, statement, documentProperties.getPaymentScheduleBaseName(), buildPaymentSchedule(statement));
+            writeDocument(statementDirectory, statement, documentProperties.getIndividualConditionsBaseName(), buildIndividualConditions(statement));
+        } catch (IOException | DocumentException ex) {
             throw BusinessException.of(
-                    "Ошибка формирования документов",
-                    "Не удалось сформировать документы по заявке %s".formatted(statement.getStatementId())
+                    DOCUMENT_CREATION_ERROR,
+                    DOCUMENT_CREATION_ERROR_DESCRIPTION.formatted(statement.getStatementId())
             );
         }
 
-        log.info("<< createCreditDocuments, statementId: {}", statement.getStatementId());
+        log.info(LOG_CREATE_DOCUMENTS_OUT, statement.getStatementId(), statementDirectory.toAbsolutePath().normalize());
     }
 
     @Override
     public List<GeneratedDocument> getCreditDocuments(StatementDto statement) {
-        log.info(">> getCreditDocuments, statementId: {}", statement.getStatementId());
+        log.info(LOG_GET_DOCUMENTS_IN, statement.getStatementId());
 
         Path statementDirectory = getStatementDirectory(statement.getStatementId());
         if (!Files.exists(statementDirectory)) {
             throw BusinessException.of(
-                    "Документы не найдены",
-                    "Документы по заявке %s еще не сформированы".formatted(statement.getStatementId())
+                    DOCUMENTS_NOT_FOUND_ERROR,
+                    DOCUMENTS_NOT_FOUND_ERROR_DESCRIPTION.formatted(statement.getStatementId())
             );
         }
 
         List<GeneratedDocument> documents = List.of(
-                readDocument(statementDirectory, statement, CONTRACT_BASE_NAME),
-                readDocument(statementDirectory, statement, PAYMENT_SCHEDULE_BASE_NAME),
-                readDocument(statementDirectory, statement, INDIVIDUAL_CONDITIONS_BASE_NAME)
+                readDocument(statementDirectory, statement, documentProperties.getContractBaseName()),
+                readDocument(statementDirectory, statement, documentProperties.getPaymentScheduleBaseName()),
+                readDocument(statementDirectory, statement, documentProperties.getIndividualConditionsBaseName())
         );
 
-        log.info("<< getCreditDocuments, documents count: {}", documents.size());
+        log.info(LOG_GET_DOCUMENTS_OUT, documents.size(), statementDirectory.toAbsolutePath().normalize());
         return documents;
     }
 
-    private void writeDocument(Path statementDirectory, StatementDto statement, String baseName, String content)
-            throws IOException {
-        Files.writeString(
+    private void writeDocument(Path statementDirectory, StatementDto statement, String baseName, List<String> lines)
+            throws IOException, DocumentException {
+        Files.write(
                 statementDirectory.resolve(buildStoredFileName(baseName, statement.getStatementId())),
-                content,
-                StandardCharsets.UTF_8
+                buildPdf(lines)
         );
     }
 
@@ -87,96 +120,113 @@ public class DocumentServiceImpl implements DocumentService {
             return new GeneratedDocument(
                     storedFileName,
                     buildAttachmentName(baseName),
-                    TEXT_CONTENT_TYPE,
+                    documentProperties.getPdfContentType(),
                     Files.readAllBytes(documentPath)
             );
         } catch (IOException ex) {
             throw BusinessException.of(
-                    "Документ не найден",
-                    "Не удалось прочитать документ %s по заявке %s".formatted(storedFileName, statement.getStatementId())
+                    DOCUMENT_NOT_FOUND_ERROR,
+                    DOCUMENT_NOT_FOUND_ERROR_DESCRIPTION.formatted(storedFileName, statement.getStatementId())
             );
         }
     }
 
+    private byte[] buildPdf(List<String> lines) throws IOException, DocumentException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document();
+        PdfWriter.getInstance(document, outputStream);
+
+        Font titleFont = createFont(16, Font.BOLD);
+        Font textFont = createFont(12, Font.NORMAL);
+
+        document.open();
+        for (int i = 0; i < lines.size(); i++) {
+            Font font = i == 0 ? titleFont : textFont;
+            document.add(new Paragraph(lines.get(i), font));
+        }
+        document.close();
+
+        return outputStream.toByteArray();
+    }
+
+    private Font createFont(int size, int style) throws IOException, DocumentException {
+        Path fontPath = findFontPath();
+        if (fontPath == null) {
+            return FontFactory.getFont(FontFactory.HELVETICA, size, style);
+        }
+
+        BaseFont baseFont = BaseFont.createFont(
+                fontPath.toString(),
+                BaseFont.IDENTITY_H,
+                BaseFont.EMBEDDED
+        );
+        return new Font(baseFont, size, style);
+    }
+
+    private Path findFontPath() {
+        DocumentProperties.FontProperties font = documentProperties.getFont();
+        return List.of(
+                        Path.of(font.getWindowsArialPath()),
+                        Path.of(font.getLinuxDejavuPath()),
+                        Path.of(font.getLinuxDejavuAltPath())
+                )
+                .stream()
+                .filter(Files::exists)
+                .findFirst()
+                .orElse(null);
+    }
+
     private Path getStatementDirectory(UUID statementId) {
-        return Path.of(storagePath).resolve(statementId.toString());
+        return Path.of(documentProperties.getStoragePath()).resolve(statementId.toString());
     }
 
     private String buildStoredFileName(String baseName, UUID statementId) {
-        return "%s-%s.txt".formatted(baseName, statementId);
+        return "%s-%s%s".formatted(baseName, statementId, documentProperties.getFileExtension());
     }
 
     private String buildAttachmentName(String baseName) {
-        return "%s.txt".formatted(baseName);
+        return "%s%s".formatted(baseName, documentProperties.getFileExtension());
     }
 
-    private String buildCreditContract(StatementDto statement) {
+    private List<String> buildCreditContract(StatementDto statement) {
         LoanOfferDto offer = statement.getAppliedOffer();
-        return """
-                Кредитный договор
-
-                Номер заявки: %s
-                Дата формирования: %s
-                Идентификатор клиента: %s
-                Идентификатор кредита: %s
-                Статус заявки: %s
-
-                Сумма кредита: %s
-                Срок кредита: %s месяцев
-                Процентная ставка: %s
-                Ежемесячный платеж: %s
-
-                Настоящий документ сформирован автоматически для кредитной заявки клиента.
-                """.formatted(
-                statement.getStatementId(),
-                LocalDate.now(),
-                statement.getClientId(),
-                statement.getCreditId(),
-                statement.getStatus(),
-                offer != null ? offer.getRequestedAmount() : "не указано",
-                offer != null ? offer.getTerm() : "не указано",
-                offer != null ? offer.getRate() : "не указано",
-                offer != null ? offer.getMonthlyPayment() : "не указано"
+        return List.of(
+                CREDIT_CONTRACT_TITLE,
+                STATEMENT_ID.formatted(statement.getStatementId()),
+                CREATED_AT.formatted(LocalDate.now()),
+                CLIENT_ID.formatted(statement.getClientId()),
+                CREDIT_ID.formatted(statement.getCreditId()),
+                STATEMENT_STATUS.formatted(statement.getStatus()),
+                REQUESTED_AMOUNT.formatted(offer != null ? offer.getRequestedAmount() : NOT_SPECIFIED),
+                CREDIT_TERM.formatted(offer != null ? offer.getTerm() : NOT_SPECIFIED),
+                INTEREST_RATE.formatted(offer != null ? offer.getRate() : NOT_SPECIFIED),
+                MONTHLY_PAYMENT.formatted(offer != null ? offer.getMonthlyPayment() : NOT_SPECIFIED),
+                CREDIT_CONTRACT_FOOTER
         );
     }
 
-    private String buildPaymentSchedule(StatementDto statement) {
+    private List<String> buildPaymentSchedule(StatementDto statement) {
         LoanOfferDto offer = statement.getAppliedOffer();
-        return """
-                График платежей
-
-                Номер заявки: %s
-                Дата формирования: %s
-                Срок кредита: %s месяцев
-                Ежемесячный платеж: %s
-                Полная сумма к возврату: %s
-
-                Детальный график платежей будет сформирован на основании рассчитанного кредита.
-                """.formatted(
-                statement.getStatementId(),
-                LocalDate.now(),
-                offer != null ? offer.getTerm() : "не указано",
-                offer != null ? offer.getMonthlyPayment() : "не указано",
-                offer != null ? offer.getTotalAmount() : "не указано"
+        return List.of(
+                PAYMENT_SCHEDULE_TITLE,
+                STATEMENT_ID.formatted(statement.getStatementId()),
+                CREATED_AT.formatted(LocalDate.now()),
+                CREDIT_TERM.formatted(offer != null ? offer.getTerm() : NOT_SPECIFIED),
+                MONTHLY_PAYMENT.formatted(offer != null ? offer.getMonthlyPayment() : NOT_SPECIFIED),
+                TOTAL_AMOUNT.formatted(offer != null ? offer.getTotalAmount() : NOT_SPECIFIED),
+                PAYMENT_SCHEDULE_FOOTER
         );
     }
 
-    private String buildIndividualConditions(StatementDto statement) {
+    private List<String> buildIndividualConditions(StatementDto statement) {
         LoanOfferDto offer = statement.getAppliedOffer();
-        return """
-                Индивидуальные условия кредитования
-
-                Номер заявки: %s
-                Дата формирования: %s
-                Страхование подключено: %s
-                Зарплатный клиент: %s
-
-                Индивидуальные условия сформированы на основании выбранного кредитного предложения.
-                """.formatted(
-                statement.getStatementId(),
-                LocalDate.now(),
-                offer != null ? offer.getIsInsuranceEnabled() : "не указано",
-                offer != null ? offer.getIsSalaryClient() : "не указано"
+        return List.of(
+                INDIVIDUAL_CONDITIONS_TITLE,
+                STATEMENT_ID.formatted(statement.getStatementId()),
+                CREATED_AT.formatted(LocalDate.now()),
+                INSURANCE_ENABLED.formatted(offer != null ? offer.getIsInsuranceEnabled() : NOT_SPECIFIED),
+                SALARY_CLIENT.formatted(offer != null ? offer.getIsSalaryClient() : NOT_SPECIFIED),
+                INDIVIDUAL_CONDITIONS_FOOTER
         );
     }
 }

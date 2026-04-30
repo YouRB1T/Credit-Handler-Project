@@ -7,6 +7,7 @@ import com.credithandler.api.dto.calc.CreditDto;
 import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.api.dto.model.UpdateStatementStatusRequestDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.api.dto.error.BusinessException;
@@ -216,7 +217,7 @@ public class DealServiceImpl implements DealService {
                 ));
 
         if (statement.getStatus() != ApplicationStatus.CC_APPROVED
-                && statement.getStatus() != ApplicationStatus.DOCUMENT_CREATED) {
+                && statement.getStatus() != ApplicationStatus.DOCUMENTS_CREATED) {
             throw BusinessException.of(
                     ErrorConstants.INVALID_STATEMENT_STATUS,
                     String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, statement.getStatus())
@@ -257,8 +258,7 @@ public class DealServiceImpl implements DealService {
                         String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
                 ));
 
-        if (statement.getStatus() != ApplicationStatus.PREPARE_DOCUMENTS
-                && statement.getStatus() != ApplicationStatus.DOCUMENT_CREATED) {
+        if (statement.getStatus() != ApplicationStatus.DOCUMENTS_CREATED) {
             throw BusinessException.of(
                     ErrorConstants.INVALID_STATEMENT_STATUS,
                     String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, statement.getStatus())
@@ -266,12 +266,6 @@ public class DealServiceImpl implements DealService {
         }
 
         statement.setSesCode(generateSesCode());
-        statement.setStatus(ApplicationStatus.DOCUMENT_CREATED);
-        statement.getHistoryStatus().add(HistoryStatus.builder()
-                .status(ApplicationStatus.DOCUMENT_CREATED)
-                .timestamp(LocalDateTime.now())
-                .changeType(ChangeType.MANUAL)
-                .build());
 
         Statement savedStatement = statementRepository.save(statement);
         StatementDto statementDto = statementMapper.toDto(savedStatement);
@@ -305,6 +299,13 @@ public class DealServiceImpl implements DealService {
                         String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
                 ));
 
+        if (statement.getStatus() != ApplicationStatus.DOCUMENTS_CREATED) {
+            throw BusinessException.of(
+                    ErrorConstants.INVALID_STATEMENT_STATUS,
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, statement.getStatus())
+            );
+        }
+
         if (statement.getSesCode() == null || !statement.getSesCode().equals(request.getSesCode())) {
             throw BusinessException.of(
                     "Некорректный SES-код",
@@ -313,11 +314,18 @@ public class DealServiceImpl implements DealService {
         }
 
         statement.setSignDate(LocalDateTime.now());
-        statement.setStatus(ApplicationStatus.DOCUMENT_SIGNED);
+        statement.setStatus(ApplicationStatus.DOCUMENTS_SIGNED);
         statement.getHistoryStatus().add(HistoryStatus.builder()
-                .status(ApplicationStatus.DOCUMENT_SIGNED)
+                .status(ApplicationStatus.DOCUMENTS_SIGNED)
                 .timestamp(LocalDateTime.now())
                 .changeType(ChangeType.MANUAL)
+                .build());
+
+        statement.setStatus(ApplicationStatus.CREDIT_ISSUED);
+        statement.getHistoryStatus().add(HistoryStatus.builder()
+                .status(ApplicationStatus.CREDIT_ISSUED)
+                .timestamp(LocalDateTime.now())
+                .changeType(ChangeType.AUTOMATIC)
                 .build());
 
         Statement savedStatement = statementRepository.save(statement);
@@ -338,6 +346,54 @@ public class DealServiceImpl implements DealService {
         emailMessageProducer.sendCreditIssuedMessage(emailMessage);
 
         log.info("<< codeDocuments, statementId: {}, status: {}", statementId, statementDto.getStatus());
+        return statementDto;
+    }
+
+    @Override
+    @Transactional
+    public StatementDto updateStatementStatus(UUID statementId, UpdateStatementStatusRequestDto request) {
+        log.info(">> updateStatementStatus, statementId: {}, request: {}", statementId, request);
+
+        Statement statement = statementRepository.findByIdWithLock(statementId)
+                .orElseThrow(() -> BusinessException.of(
+                        ErrorConstants.STATEMENT_NOT_FOUND,
+                        String.format(ErrorConstants.STATEMENT_NOT_FOUND_DESC, statementId)
+                ));
+
+        if (request == null || request.getStatus() == null) {
+            throw BusinessException.of(
+                    ErrorConstants.INVALID_STATEMENT_STATUS,
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, null)
+            );
+        }
+
+        ApplicationStatus status = ApplicationStatus.valueOf(request.getStatus().name());
+        if (status != ApplicationStatus.DOCUMENTS_CREATED
+                || (statement.getStatus() != ApplicationStatus.PREPARE_DOCUMENTS
+                && statement.getStatus() != ApplicationStatus.DOCUMENTS_CREATED)) {
+            throw BusinessException.of(
+                    ErrorConstants.INVALID_STATEMENT_STATUS,
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, statement.getStatus())
+            );
+        }
+
+        if (statement.getStatus() == status) {
+            StatementDto statementDto = statementMapper.toDto(statement);
+            log.info("<< updateStatementStatus, statementId: {}, status: {}", statementId, statementDto.getStatus());
+            return statementDto;
+        }
+
+        statement.setStatus(status);
+        statement.getHistoryStatus().add(HistoryStatus.builder()
+                .status(status)
+                .timestamp(LocalDateTime.now())
+                .changeType(ChangeType.AUTOMATIC)
+                .build());
+
+        Statement savedStatement = statementRepository.save(statement);
+        StatementDto statementDto = statementMapper.toDto(savedStatement);
+
+        log.info("<< updateStatementStatus, statementId: {}, status: {}", statementId, statementDto.getStatus());
         return statementDto;
     }
 

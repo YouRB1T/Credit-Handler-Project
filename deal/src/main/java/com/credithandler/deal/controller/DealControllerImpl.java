@@ -5,6 +5,7 @@ import com.credithandler.api.dto.dossier.SesCodeRequestDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.api.dto.model.UpdateStatementStatusRequestDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.deal.service.DealService;
 import com.credithandler.deal.service.StatementService;
@@ -57,5 +58,10 @@ public class DealControllerImpl implements DealController {
     @Override
     public ResponseEntity<StatementDto> codeDocuments(SesCodeRequestDto request, UUID statementId) {
         return ResponseEntity.ok(dealService.codeDocuments(statementId, request));
+    }
+
+    @Override
+    public ResponseEntity<StatementDto> updateStatementStatus(UUID statementId, UpdateStatementStatusRequestDto request) {
+        return ResponseEntity.ok(dealService.updateStatementStatus(statementId, request));
     }
 }

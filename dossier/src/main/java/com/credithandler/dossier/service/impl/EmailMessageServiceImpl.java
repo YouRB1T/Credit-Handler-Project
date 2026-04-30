@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.credithandler.dossier.constants.EmailTextConstants.CREATE_DOCUMENTS_TEXT;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -56,8 +58,10 @@ public class EmailMessageServiceImpl implements EmailMessageService {
         log.info(">> processCreateDocuments, statement: {}", statement);
 
         documentService.createCreditDocuments(statement);
+        sendCreateDocumentsEmail(statement);
 
-        log.info("<< processCreateDocuments, documents created, statementId: {}", statement.getStatementId());
+        log.info("<< processCreateDocuments, documents created, email sent to: {}, statementId: {}",
+                statement.getEmail(), statement.getStatementId());
     }
 
     @Override
@@ -144,6 +148,20 @@ public class EmailMessageServiceImpl implements EmailMessageService {
 
                 Номер заявки: %s
                 """.formatted(body, message.getStatementId());
+    }
+
+    private void sendCreateDocumentsEmail(StatementDto statement) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setFrom(mailFrom);
+        mailMessage.setTo(statement.getEmail());
+        mailMessage.setSubject(CREATE_DOCUMENTS_SUBJECT);
+        mailMessage.setText(buildCreateDocumentsText(statement));
+
+        javaMailSender.send(mailMessage);
+    }
+
+    private String buildCreateDocumentsText(StatementDto statement) {
+        return CREATE_DOCUMENTS_TEXT.formatted(statement.getStatementId(), statement.getStatus());
     }
 
     private void sendDocumentsEmail(StatementDto statement, List<GeneratedDocument> documents) {

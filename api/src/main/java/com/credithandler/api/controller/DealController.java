@@ -5,6 +5,7 @@ import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.api.dto.model.UpdateStatementStatusRequestDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -119,4 +121,22 @@ public interface DealController {
     ResponseEntity<StatementDto> codeDocuments(
             @Valid @RequestBody SesCodeRequestDto request,
             @PathVariable UUID statementId);
+
+    @PutMapping("/admin/statement/{statementId}/status")
+    @Operation(
+            summary = "Обновление статуса заявки",
+            description = "Внутренняя ручка для обновления статуса заявки после успешной обработки события в Dossier"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Статус заявки успешно обновлен",
+                    content = @Content(schema = @Schema(implementation = StatementDto.class))),
+            @ApiResponse(responseCode = "404", description = "Заявка с указанным statementId не найдена",
+                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
+            @ApiResponse(responseCode = "422", description = "Некорректный статус",
+                    content = @Content(schema = @Schema(implementation = BusinessException.class))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
+    })
+    ResponseEntity<StatementDto> updateStatementStatus(
+            @PathVariable UUID statementId,
+            @Valid @RequestBody UpdateStatementStatusRequestDto request);
 }

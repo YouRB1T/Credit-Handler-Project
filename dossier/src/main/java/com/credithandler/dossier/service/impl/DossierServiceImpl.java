@@ -1,7 +1,10 @@
 package com.credithandler.dossier.service.impl;
 
 import com.credithandler.api.dto.error.BusinessException;
+import com.credithandler.api.dto.model.ApplicationStatus;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.api.dto.model.UpdateStatementStatusRequestDto;
+import com.credithandler.dossier.client.DealClient;
 import com.credithandler.dossier.service.DossierService;
 import com.credithandler.dossier.service.EmailMessageService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 public class DossierServiceImpl implements DossierService {
 
     private final EmailMessageService emailMessageService;
+    private final DealClient dealClient;
 
     @Override
     public void sendDocuments(StatementDto statement) {
@@ -21,9 +25,13 @@ public class DossierServiceImpl implements DossierService {
 
         validateStatement(statement);
         emailMessageService.processSendDocuments(statement);
+        dealClient.updateStatementStatus(
+                statement.getStatementId(),
+                new UpdateStatementStatusRequestDto(ApplicationStatus.DOCUMENTS_CREATED)
+        );
 
-        log.info("<< sendDocuments, statementId: {}, email: {}",
-                statement.getStatementId(), statement.getEmail());
+        log.info("<< sendDocuments, statementId: {}, email: {}, status: {}",
+                statement.getStatementId(), statement.getEmail(), ApplicationStatus.DOCUMENTS_CREATED);
     }
 
     private void validateStatement(StatementDto statement) {
