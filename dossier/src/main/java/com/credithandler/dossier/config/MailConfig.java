@@ -1,54 +1,31 @@
 package com.credithandler.dossier.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
-import java.util.Properties;
-
 @Configuration
+@RequiredArgsConstructor
 public class MailConfig {
 
-    @Value("${spring.mail.host}")
-    private String host;
-
-    @Value("${spring.mail.port}")
-    private Integer port;
-
-    @Value("${spring.mail.username:}")
-    private String username;
-
-    @Value("${spring.mail.password:}")
-    private String password;
-
-    @Value("${spring.mail.properties.mail.smtp.auth:false}")
-    private String smtpAuth;
-
-    @Value("${spring.mail.properties.mail.smtp.starttls.enable:false}")
-    private String startTlsEnable;
-
-    @Value("${spring.mail.properties.mail.smtp.ssl.enable:false}")
-    private String sslEnable;
+    private final MailProperties mailProperties;
 
     @Bean
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost(host);
-        mailSender.setPort(port);
+        mailSender.setHost(mailProperties.getHost());
+        mailSender.setPort(mailProperties.getPort());
 
-        if (username != null && !username.isBlank()) {
-            mailSender.setUsername(username);
+        if (mailProperties.getUsername() != null && !mailProperties.getUsername().isBlank()) {
+            mailSender.setUsername(mailProperties.getUsername());
         }
-        if (password != null && !password.isBlank()) {
-            mailSender.setPassword(password);
+        if (mailProperties.getPassword() != null && !mailProperties.getPassword().isBlank()) {
+            mailSender.setPassword(mailProperties.getPassword());
         }
 
-        Properties properties = mailSender.getJavaMailProperties();
-        properties.put("mail.smtp.auth", smtpAuth);
-        properties.put("mail.smtp.starttls.enable", startTlsEnable);
-        properties.put("mail.smtp.ssl.enable", sslEnable);
+        mailSender.getJavaMailProperties().putAll(mailProperties.getProperties());
 
         return mailSender;
     }

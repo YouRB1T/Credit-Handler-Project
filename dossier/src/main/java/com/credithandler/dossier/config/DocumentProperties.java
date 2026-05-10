@@ -5,12 +5,10 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import static com.credithandler.dossier.constants.DocumentPropertiesConstants.DOCUMENTS_PREFIX;
-
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = DOCUMENTS_PREFIX)
+@ConfigurationProperties(prefix = "dossier.documents")
 public class DocumentProperties {
 
     private String storagePath;

@@ -27,19 +27,12 @@ import static com.credithandler.dossier.constants.EmailErrorConstants.EMAIL_RECI
 import static com.credithandler.dossier.constants.EmailErrorConstants.EMAIL_RECIPIENT_NOT_REACHED_ERROR_DESCRIPTION;
 import static com.credithandler.dossier.constants.EmailErrorConstants.EMAIL_SEND_ERROR;
 import static com.credithandler.dossier.constants.EmailErrorConstants.EMAIL_SEND_ERROR_DESCRIPTION;
-import static com.credithandler.dossier.constants.EmailTextConstants.CREATE_DOCUMENTS_TEXT;
+import static com.credithandler.dossier.constants.EmailTextConstants.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailMessageServiceImpl implements EmailMessageService {
-
-    private static final String FINISH_REGISTRATION_SUBJECT = "Завершение регистрации кредитной заявки";
-    private static final String CREATE_DOCUMENTS_SUBJECT = "Формирование кредитных документов";
-    private static final String SEND_DOCUMENTS_SUBJECT = "Кредитные документы по вашей заявке";
-    private static final String SEND_SES_SUBJECT = "Код подтверждения подписания документов";
-    private static final String CREDIT_ISSUED_SUBJECT = "Кредит выдан";
-    private static final String STATEMENT_DENIED_SUBJECT = "Отказ по кредитной заявке";
 
     private final JavaMailSender javaMailSender;
     private final DocumentService documentService;
@@ -106,7 +99,7 @@ public class EmailMessageServiceImpl implements EmailMessageService {
         sendSimpleEmail(
                 message,
                 CREDIT_ISSUED_SUBJECT,
-                buildSimpleText(message, "Поздравляем, кредит успешно выдан.")
+                buildSimpleText(message, CREDIT_ISSUED_TEXT)
         );
 
         log.info("<< processCreditIssued, email sent to: {}, statementId: {}",
@@ -120,7 +113,7 @@ public class EmailMessageServiceImpl implements EmailMessageService {
         sendSimpleEmail(
                 message,
                 STATEMENT_DENIED_SUBJECT,
-                buildSimpleText(message, "По вашей кредитной заявке принято отрицательное решение.")
+                buildSimpleText(message, STATEMENT_DENIED_TEXT)
         );
 
         log.info("<< processStatementDenied, email sent to: {}, statementId: {}",
@@ -128,16 +121,7 @@ public class EmailMessageServiceImpl implements EmailMessageService {
     }
 
     private String buildFinishRegistrationText(EmailMessage message) {
-        return """
-                Здравствуйте!
-
-                Ваша кредитная заявка предварительно одобрена.
-                Для продолжения оформления кредита завершите регистрацию и заполните дополнительные данные.
-
-                Номер заявки: %s
-
-                %s
-                """.formatted(message.getStatementId(), message.getText());
+        return FINISH_REGISTRATION_TEXT.formatted(message.getStatementId(), message.getText());
     }
 
     private void sendSimpleEmail(EmailMessage message, String subject, String text) {
@@ -151,13 +135,7 @@ public class EmailMessageServiceImpl implements EmailMessageService {
     }
 
     private String buildSimpleText(EmailMessage message, String body) {
-        return """
-                Здравствуйте!
-
-                %s
-
-                Номер заявки: %s
-                """.formatted(body, message.getStatementId());
+        return SIMPLE_TEXT.formatted(body, message.getStatementId());
     }
 
     private void sendCreateDocumentsEmail(StatementDto statement) {
@@ -254,15 +232,6 @@ public class EmailMessageServiceImpl implements EmailMessageService {
     }
 
     private String buildSendDocumentsText(StatementDto statement) {
-        return """
-                Здравствуйте!
-
-                Кредитные документы по вашей заявке сформированы и приложены к письму.
-                Ознакомьтесь с документами и перейдите к подписанию.
-
-                Номер заявки: %s
-
-                Статус заявки: %s
-                """.formatted(statement.getStatementId(), statement.getStatus());
+        return SEND_DOCUMENTS_TEXT.formatted(statement.getStatementId(), statement.getStatus());
     }
 }

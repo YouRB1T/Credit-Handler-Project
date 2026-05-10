@@ -56,16 +56,11 @@ import static com.credithandler.dossier.constants.DocumentTextConstants.TOTAL_AM
 @RequiredArgsConstructor
 public class DocumentServiceImpl implements DocumentService {
 
-    private static final String LOG_CREATE_DOCUMENTS_IN = ">> createCreditDocuments, statementId: {}";
-    private static final String LOG_CREATE_DOCUMENTS_OUT = "<< createCreditDocuments, statementId: {}, directory: {}";
-    private static final String LOG_GET_DOCUMENTS_IN = ">> getCreditDocuments, statementId: {}";
-    private static final String LOG_GET_DOCUMENTS_OUT = "<< getCreditDocuments, documents count: {}, directory: {}";
-
     private final DocumentProperties documentProperties;
 
     @Override
     public void createCreditDocuments(StatementDto statement) {
-        log.info(LOG_CREATE_DOCUMENTS_IN, statement.getStatementId());
+        log.info(">> createCreditDocuments, statementId: {}", statement.getStatementId());
 
         Path statementDirectory = getStatementDirectory(statement.getStatementId());
         try {
@@ -80,12 +75,13 @@ public class DocumentServiceImpl implements DocumentService {
             );
         }
 
-        log.info(LOG_CREATE_DOCUMENTS_OUT, statement.getStatementId(), statementDirectory.toAbsolutePath().normalize());
+        log.info("<< createCreditDocuments, statementId: {}, directory: {}",
+                statement.getStatementId(), statementDirectory.toAbsolutePath().normalize());
     }
 
     @Override
     public List<GeneratedDocument> getCreditDocuments(StatementDto statement) {
-        log.info(LOG_GET_DOCUMENTS_IN, statement.getStatementId());
+        log.info(">> getCreditDocuments, statementId: {}", statement.getStatementId());
 
         Path statementDirectory = getStatementDirectory(statement.getStatementId());
         if (!Files.exists(statementDirectory)) {
@@ -101,7 +97,8 @@ public class DocumentServiceImpl implements DocumentService {
                 readDocument(statementDirectory, statement, documentProperties.getIndividualConditionsBaseName())
         );
 
-        log.info(LOG_GET_DOCUMENTS_OUT, documents.size(), statementDirectory.toAbsolutePath().normalize());
+        log.info("<< getCreditDocuments, documents count: {}, directory: {}",
+                documents.size(), statementDirectory.toAbsolutePath().normalize());
         return documents;
     }
 

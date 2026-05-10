@@ -1,22 +1,30 @@
 package com.credithandler.deal.service.impl;
 
+import com.credithandler.api.dto.calc.CreditDto;
+import com.credithandler.api.dto.calc.ScoringDataDto;
 import com.credithandler.api.dto.dossier.EmailMessage;
 import com.credithandler.api.dto.dossier.EmailTheme;
 import com.credithandler.api.dto.dossier.SesCodeRequestDto;
-import com.credithandler.api.dto.calc.CreditDto;
-import com.credithandler.api.dto.calc.ScoringDataDto;
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.api.dto.model.UpdateStatementStatusRequestDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.deal.client.CalculatorClient;
-import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.deal.constants.ErrorConstants;
 import com.credithandler.deal.mapper.CreditMapper;
 import com.credithandler.deal.mapper.ScoringDataMapper;
 import com.credithandler.deal.mapper.StatementMapper;
-import com.credithandler.deal.model.*;
-import com.credithandler.deal.model.enums.*;
+import com.credithandler.deal.model.Client;
+import com.credithandler.deal.model.Credit;
+import com.credithandler.deal.model.HistoryStatus;
+import com.credithandler.deal.model.Passport;
+import com.credithandler.deal.model.Statement;
+import com.credithandler.deal.model.enums.ApplicationStatus;
+import com.credithandler.deal.model.enums.ChangeType;
+import com.credithandler.deal.model.enums.CreditStatus;
+import com.credithandler.deal.model.enums.Gender;
+import com.credithandler.deal.model.enums.MaritalStatus;
 import com.credithandler.deal.repository.ClientRepository;
 import com.credithandler.deal.repository.CreditRepository;
 import com.credithandler.deal.repository.StatementRepository;
@@ -32,6 +40,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.credithandler.deal.constants.DealTextConstants.*;
 import static com.credithandler.deal.model.enums.ApplicationStatus.PREAPPROVAL;
 
 @Slf4j
@@ -103,7 +112,7 @@ public class DealServiceImpl implements DealService {
                 client.getEmail(),
                 EmailTheme.FINISH_REGISTRATION,
                 statement.getStatementId(),
-                "Для продолжения оформления кредита завершите регистрацию."
+                FINISH_REGISTRATION_TEXT
         );
         emailMessageProducer.sendFinishRegistrationMessage(emailMessage);
 
@@ -280,7 +289,7 @@ public class DealServiceImpl implements DealService {
                 client.getEmail(),
                 EmailTheme.SEND_SES,
                 savedStatement.getStatementId(),
-                "Код подтверждения подписания документов: %s".formatted(savedStatement.getSesCode())
+                SES_CODE_TEXT.formatted(savedStatement.getSesCode())
         );
         emailMessageProducer.sendSesMessage(emailMessage);
 
@@ -308,8 +317,8 @@ public class DealServiceImpl implements DealService {
 
         if (statement.getSesCode() == null || !statement.getSesCode().equals(request.getSesCode())) {
             throw BusinessException.of(
-                    "Некорректный SES-код",
-                    "Переданный код подтверждения не совпадает с сохраненным кодом заявки"
+                    INVALID_SES_CODE,
+                    INVALID_SES_CODE_DESC
             );
         }
 
@@ -341,7 +350,7 @@ public class DealServiceImpl implements DealService {
                 client.getEmail(),
                 EmailTheme.CREDIT_ISSUED,
                 savedStatement.getStatementId(),
-                "Кредитное предложение успешно сформировано и выдано."
+                CREDIT_ISSUED_TEXT
         );
         emailMessageProducer.sendCreditIssuedMessage(emailMessage);
 
@@ -363,7 +372,7 @@ public class DealServiceImpl implements DealService {
         if (request == null || request.getStatus() == null) {
             throw BusinessException.of(
                     ErrorConstants.INVALID_STATEMENT_STATUS,
-                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, null)
+                    String.format(ErrorConstants.INVALID_STATEMENT_STATUS_DESC, (Object) null)
             );
         }
 

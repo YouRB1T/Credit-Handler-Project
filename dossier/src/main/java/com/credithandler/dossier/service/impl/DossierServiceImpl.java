@@ -11,6 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static com.credithandler.dossier.constants.DossierServiceTextConstants.EMAIL_REQUIRED_ERROR_DESCRIPTION;
+import static com.credithandler.dossier.constants.DossierServiceTextConstants.INVALID_MESSAGE_ERROR;
+import static com.credithandler.dossier.constants.DossierServiceTextConstants.STATEMENT_ID_REQUIRED_ERROR_DESCRIPTION;
+import static com.credithandler.dossier.constants.DossierServiceTextConstants.STATEMENT_NULL_ERROR_DESCRIPTION;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,20 +42,20 @@ public class DossierServiceImpl implements DossierService {
     private void validateStatement(StatementDto statement) {
         if (statement == null) {
             throw BusinessException.of(
-                    "Некорректное сообщение",
-                    "StatementDto не должен быть null"
+                    INVALID_MESSAGE_ERROR,
+                    STATEMENT_NULL_ERROR_DESCRIPTION
             );
         }
         if (statement.getStatementId() == null) {
             throw BusinessException.of(
-                    "Некорректное сообщение",
-                    "statementId обязателен для отправки документов"
+                    INVALID_MESSAGE_ERROR,
+                    STATEMENT_ID_REQUIRED_ERROR_DESCRIPTION
             );
         }
         if (statement.getEmail() == null || statement.getEmail().isBlank()) {
             throw BusinessException.of(
-                    "Некорректное сообщение",
-                    "Email клиента обязателен для отправки документов"
+                    INVALID_MESSAGE_ERROR,
+                    EMAIL_REQUIRED_ERROR_DESCRIPTION
             );
         }
     }
