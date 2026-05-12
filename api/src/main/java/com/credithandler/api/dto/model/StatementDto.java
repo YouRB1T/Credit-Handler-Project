@@ -17,6 +17,7 @@ import java.util.UUID;
 public class StatementDto {
     private UUID statementId;
     private UUID clientId;
+    private String email;
     private UUID creditId;
     private ApplicationStatus status;
     private LocalDateTime creationDate;

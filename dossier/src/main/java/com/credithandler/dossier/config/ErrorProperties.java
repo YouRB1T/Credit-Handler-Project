@@ -1,4 +1,4 @@
-package com.credithandler.deal.config;
+package com.credithandler.dossier.config;
 
 import lombok.Getter;
 import lombok.Setter;

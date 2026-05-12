@@ -1,9 +1,11 @@
 package com.credithandler.deal.controller;
 
 import com.credithandler.api.controller.DealController;
+import com.credithandler.api.dto.dossier.SesCodeRequestDto;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.api.dto.model.UpdateStatementStatusRequestDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.deal.service.DealService;
 import com.credithandler.deal.service.StatementService;
@@ -41,5 +43,25 @@ public class DealControllerImpl implements DealController {
     public ResponseEntity<StatementDto> registrationDealAndCountCredit(
             FinishRegistrationRequestDto request, UUID statementId) {
         return ResponseEntity.ok(dealService.registrationDealAndCountCredit(request, statementId));
+    }
+
+    @Override
+    public ResponseEntity<StatementDto> sendDocuments(UUID statementId) {
+        return ResponseEntity.ok(dealService.sendDocuments(statementId));
+    }
+
+    @Override
+    public ResponseEntity<StatementDto> signDocuments(UUID statementId) {
+        return ResponseEntity.ok(dealService.signDocuments(statementId));
+    }
+
+    @Override
+    public ResponseEntity<StatementDto> codeDocuments(SesCodeRequestDto request, UUID statementId) {
+        return ResponseEntity.ok(dealService.codeDocuments(statementId, request));
+    }
+
+    @Override
+    public ResponseEntity<StatementDto> updateStatementStatus(UUID statementId, UpdateStatementStatusRequestDto request) {
+        return ResponseEntity.ok(dealService.updateStatementStatus(statementId, request));
     }
 }

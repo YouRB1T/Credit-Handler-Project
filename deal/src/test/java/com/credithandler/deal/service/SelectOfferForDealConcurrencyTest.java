@@ -2,7 +2,6 @@ package com.credithandler.deal.service;
 
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
-import com.credithandler.deal.client.CalculatorClient;
 import com.credithandler.deal.model.Statement;
 import com.credithandler.deal.model.enums.ApplicationStatus;
 import com.credithandler.deal.repository.StatementRepository;
