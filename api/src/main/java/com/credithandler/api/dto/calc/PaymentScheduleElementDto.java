@@ -1,0 +1,24 @@
+package com.credithandler.api.dto.calc;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaymentScheduleElementDto {
+    private Integer number;
+    private LocalDate date;
+    private BigDecimal totalPayment;
+    private BigDecimal interestPayment;
+    private BigDecimal debtPayment;
+    private BigDecimal remainingDebt;
+}

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="create-credit-table" author="yourb1t">
+        <createTable tableName="credit">
+            <column name="credit_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="amount" type="NUMERIC(19, 2)"/>
+            <column name="term" type="INT"/>
+            <column name="monthly_payment" type="NUMERIC(19, 2)"/>
+            <column name="rate" type="NUMERIC(5, 2)"/>
+            <column name="psk" type="NUMERIC(19, 2)"/>
+            <column name="payment_schedule" type="jsonb"/>
+            <column name="insurance_enabled" type="BOOLEAN"/>
+            <column name="salary_client" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="credit_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-client-table" author="yourb1t">
+        <createTable tableName="client">
+            <column name="client_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="middle_name" type="VARCHAR(255)"/>
+            <column name="birthdate" type="DATE"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="gender" type="VARCHAR(50)"/>
+            <column name="marital_status" type="VARCHAR(50)"/>
+            <column name="dependent_amount" type="INT"/>
+            <column name="passport" type="jsonb"/>
+            <column name="employment_id" type="UUID"/>
+            <column name="account_number" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-statement-table" author="yourb1t">
+        <createTable tableName="statement">
+            <column name="statement_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_id" type="UUID"/>
+            <column name="credit_id" type="UUID"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="creation_date" type="TIMESTAMP"/>
+            <column name="applied_offer" type="jsonb"/>
+            <column name="sign_date" type="TIMESTAMP"/>
+            <column name="ses_code" type="VARCHAR(255)"/>
+            <column name="history_status" type="jsonb"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add-statement-foreign-keys" author="yourb1t">
+        <addForeignKeyConstraint baseColumnNames="client_id"
+                                 baseTableName="statement"
+                                 constraintName="fk_statement_client"
+                                 referencedColumnNames="client_id"
+                                 referencedTableName="client"/>
+
+        <addForeignKeyConstraint baseColumnNames="credit_id"
+                                 baseTableName="statement"
+                                 constraintName="fk_statement_credit"
+                                 referencedColumnNames="credit_id"
+                                 referencedTableName="credit"/>
+    </changeSet>
+
+</databaseChangeLog>
