@@ -4,6 +4,7 @@ import com.credithandler.api.dto.dossier.SesCodeRequestDto;
 import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface GatewayDealService {
@@ -15,4 +16,8 @@ public interface GatewayDealService {
     StatementDto signDocuments(UUID statementId);
 
     StatementDto codeDocuments(UUID statementId, SesCodeRequestDto request);
+
+    StatementDto getStatementById(UUID statementId);
+
+    List<StatementDto> getAllStatements();
 }

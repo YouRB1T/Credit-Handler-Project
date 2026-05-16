@@ -8,6 +8,7 @@ import com.credithandler.gateway.service.GatewayDealService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,5 +35,15 @@ public class GatewayDealServiceImpl implements GatewayDealService {
     @Override
     public StatementDto codeDocuments(UUID statementId, SesCodeRequestDto request) {
         return dealClient.codeDocuments(statementId, request);
+    }
+
+    @Override
+    public StatementDto getStatementById(UUID statementId) {
+        return dealClient.getStatementById(statementId);
+    }
+
+    @Override
+    public List<StatementDto> getAllStatements() {
+        return dealClient.getAllStatements();
     }
 }

@@ -7,7 +7,9 @@ import com.credithandler.gateway.client.DealClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.core.ParameterizedTypeReference;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -51,5 +53,22 @@ public class RestClientDealClient implements DealClient {
                 .body(request)
                 .retrieve()
                 .body(StatementDto.class);
+    }
+
+    @Override
+    public StatementDto getStatementById(UUID statementId) {
+        return restClient.get()
+                .uri("/deal/admin/statement/{statementId}", statementId)
+                .retrieve()
+                .body(StatementDto.class);
+    }
+
+    @Override
+    public List<StatementDto> getAllStatements() {
+        return restClient.get()
+                .uri("/deal/admin/statement")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 }
