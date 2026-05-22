@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+@DisplayName("Тестирование маппера кредита")
 
 class CreditMapperTest {
 

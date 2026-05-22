@@ -10,6 +10,7 @@ import org.mapstruct.factory.Mappers;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+@DisplayName("Тестирование маппера заявки")
 
 class StatementMapperTest {
 

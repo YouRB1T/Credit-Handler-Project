@@ -5,6 +5,7 @@ import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.statement.controller.StatementControllerImpl;
 import com.credithandler.statement.service.LoanService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Тестирование контроллера statement")
 class StatementControllerImplTest {
 
     @Mock
@@ -28,6 +30,7 @@ class StatementControllerImplTest {
     private StatementControllerImpl statementController;
 
     @Test
+    @DisplayName("Создание заявки возвращает кредитные предложения")
     void createStatementShouldReturnLoanOffers() {
         LoanStatementRequestDto request = new LoanStatementRequestDto();
 
@@ -48,6 +51,7 @@ class StatementControllerImplTest {
     }
 
     @Test
+    @DisplayName("Выбор предложения возвращает заявку")
     void selectOfferShouldReturnStatementDto() {
         LoanOfferDto request = new LoanOfferDto();
 

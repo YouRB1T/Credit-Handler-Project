@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+@DisplayName("Тестирование маппера клиента")
 
 class ClientMapperTest {
 

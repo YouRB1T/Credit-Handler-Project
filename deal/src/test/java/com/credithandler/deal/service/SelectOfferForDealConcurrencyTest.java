@@ -1,5 +1,7 @@
 package com.credithandler.deal.service;
 
+
+import org.junit.jupiter.api.DisplayName;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.deal.model.Statement;
@@ -41,8 +43,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
+@DisplayName("Тестирование конкурентного выбора предложения")
 class SelectOfferForDealConcurrencyTest {
 
     @Container

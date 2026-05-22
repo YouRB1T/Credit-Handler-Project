@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@DisplayName("Тестирование контроллера deal")
 class DealControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -117,16 +118,25 @@ class DealControllerTest {
 
     @Test
     @DisplayName("Ошибка если сервис кидает BusinessException")
-    void shouldReturnBadRequest_whenBusinessException() throws Exception {
+    void shouldReturnUnprocessableEntity_whenBusinessException() throws Exception {
 
         when(statementService.createStatement(any()))
                 .thenThrow(BusinessException.of("Ошибка", "Описание"));
 
-        LoanStatementRequestDto request = new LoanStatementRequestDto();
+        LoanStatementRequestDto request = LoanStatementRequestDto.builder()
+                .firstName("Ivan")
+                .lastName("Ivanov")
+                .email("ivan@test.com")
+                .birthdate(LocalDate.of(1990, 1, 1))
+                .passportSeries("1234")
+                .passportNumber("123456")
+                .amount(new BigDecimal("100000"))
+                .term(12)
+                .build();
 
         mockMvc.perform(post("/deal/statement")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 }

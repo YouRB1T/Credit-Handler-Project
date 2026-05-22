@@ -11,6 +11,7 @@ import com.credithandler.deal.constants.ErrorConstants;
 import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.deal.mapper.CreditMapper;
 import com.credithandler.deal.mapper.ScoringDataMapper;
+import com.credithandler.deal.mapper.StatementMapper;
 import com.credithandler.deal.model.Client;
 import com.credithandler.deal.model.Credit;
 import com.credithandler.deal.model.Statement;
@@ -18,6 +19,7 @@ import com.credithandler.deal.model.enums.ApplicationStatus;
 import com.credithandler.deal.repository.ClientRepository;
 import com.credithandler.deal.repository.CreditRepository;
 import com.credithandler.deal.repository.StatementRepository;
+import com.credithandler.deal.service.EmailMessageProducer;
 import com.credithandler.deal.service.impl.DealServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -58,7 +61,13 @@ public class DealServiceImplTest {
     private CreditMapper creditMapper;
 
     @Mock
+    private StatementMapper statementMapper;
+
+    @Mock
     private CalculatorClient calculatorClient;
+
+    @Mock
+    private EmailMessageProducer emailMessageProducer;
 
     @InjectMocks
     private DealServiceImpl dealService;
@@ -77,6 +86,7 @@ public class DealServiceImplTest {
 
         client = new Client();
         client.setClientId(UUID.randomUUID());
+        client.setEmail("client@test.com");
 
         statement = new Statement();
         statement.setStatementId(statementId);
@@ -91,6 +101,10 @@ public class DealServiceImplTest {
 
         when(statementRepository.findByIdWithLock(statementId))
                 .thenReturn(Optional.of(statement));
+        when(clientRepository.findById(client.getClientId()))
+                .thenReturn(Optional.of(client));
+        when(statementMapper.toDto(statement))
+                .thenReturn(new com.credithandler.api.dto.model.StatementDto());
 
         dealService.selectOfferForDeal(offer);
 
@@ -152,14 +166,18 @@ public class DealServiceImplTest {
         when(scoringDataMapper.toScoringDataDto(request, client, statement))
                 .thenReturn(new ScoringDataDto());
 
-        when(calculatorClient.calculateCredit(any()).getBody())
-                .thenReturn(creditDto);
+        when(calculatorClient.calculateCredit(any()))
+                .thenReturn(ResponseEntity.ok(creditDto));
 
         when(creditMapper.toEntity(creditDto))
                 .thenReturn(credit);
 
         when(creditRepository.save(any()))
                 .thenReturn(credit);
+        when(statementRepository.save(statement))
+                .thenReturn(statement);
+        when(statementMapper.toDto(statement))
+                .thenReturn(new com.credithandler.api.dto.model.StatementDto());
 
         dealService.registrationDealAndCountCredit(request, statementId);
 
