@@ -31,7 +31,7 @@ class PaymentScheduleServiceImplTest {
     }
 
     @Test
-    @DisplayName("корректный график платежей для стандартного кредита")
+    @DisplayName("Корректный график платежей для стандартного кредита")
     void createLoanPaymentSchedule_withStandardLoan_shouldReturnValidSchedule() {
 
         BigDecimal amount = new BigDecimal("100000");

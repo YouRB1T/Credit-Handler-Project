@@ -41,10 +41,7 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
 
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
-        monthlyRate = monthlyRate
-                .divide(BigDecimal.valueOf(NUM_MONTH), CALCULATION_SCALE, ROUNDING_MODE)
-                .divide(BigDecimal.valueOf(ONE_HANDRED), CALCULATION_SCALE, ROUNDING_MODE)
-                .setScale(RESULT_SCALE, ROUNDING_MODE);
+        monthlyRate = toMonthlyRate(monthlyRate);
         BigDecimal remainingDebt = amount;
         LocalDate date = LocalDate.now().plusMonths(ONE_MONTH);
 
@@ -90,5 +87,15 @@ public class PaymentScheduleServiceImpl implements PaymentScheduleService {
                 schedule.size(), remainingDebt);
 
         return schedule;
+    }
+
+    private BigDecimal toMonthlyRate(BigDecimal rate) {
+        if (rate.abs().compareTo(BigDecimal.ONE) < 0) {
+            return rate;
+        }
+
+        return rate
+                .divide(BigDecimal.valueOf(NUM_MONTH), CALCULATION_SCALE, ROUNDING_MODE)
+                .divide(BigDecimal.valueOf(ONE_HANDRED), CALCULATION_SCALE, ROUNDING_MODE);
     }
 }

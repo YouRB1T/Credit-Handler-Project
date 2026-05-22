@@ -37,6 +37,7 @@ class CalculatorControllerIntegrationTest {
 
     // Тесты на валидные и невалидные входные и выходные данные
     @Test
+    @DisplayName("POST /calculator/offers возвращает список предложений для валидного запроса")
     void provisionLoanOffers_whenValidRequest_thenReturnsListOfOffers() throws Exception {
 
         LoanStatementRequestDto request = TestDataFactory.createValidLoanStatementRequest();
@@ -56,6 +57,7 @@ class CalculatorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /calculator/offers возвращает Bad Request для невалидного запроса")
     void provisionLoanOffers_whenInvalidData_thenReturnsBadRequest() throws Exception {
 
         LoanStatementRequestDto request = TestDataFactory.createEmptyLoanStatementRequest();
@@ -69,6 +71,7 @@ class CalculatorControllerIntegrationTest {
 
     // Тесты на бизнес ошибки немножечко
     @Test
+    @DisplayName("POST /calculator/calc возвращает Unprocessable Entity если скоринг не пройден")
     void calculateCredit_whenDataFailsScoring_thenReturnsUnprocessableEntity() throws Exception {
 
         ScoringDataDto request = TestDataFactory.createScoringDataWithUnemployed();
@@ -94,6 +97,7 @@ class CalculatorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /calculator/calc возвращает Unprocessable Entity если сумма кредита слишком большая")
     void calculateCredit_whenLoanTooHigh_thenReturnsUnprocessableEntity() throws Exception {
         ScoringDataDto request = TestDataFactory.createScoringDataWithHighAmount();
         String requestJson = objectMapper.writeValueAsString(request);
@@ -112,6 +116,7 @@ class CalculatorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /calculator/calc возвращает Bad Request если возраст меньше допустимого")
     void calculateCredit_whenAgeTooLow_thenReturnsBadRequest() throws Exception {
 
         ScoringDataDto request = TestDataFactory.createScoringDataWithInvalidAge(17);

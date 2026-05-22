@@ -49,12 +49,12 @@ public class BusinessExceptionHandler {
 
         BusinessErrorResponse errorResponse = new BusinessErrorResponse();
         errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(errorProperties.getBusinessCode());
-        errorResponse.setError(ErrorMessages.ERROR_BUSINESS_TITLE);
+        errorResponse.setStatus(errorProperties.getValidationCode());
+        errorResponse.setError(ErrorMessages.ERROR_VALIDATION_TITLE);
         errorResponse.setMessage(errors.toString());
 
         return ResponseEntity
-                .status(errorProperties.getBusinessCode())
+                .status(errorProperties.getValidationCode())
                 .body(errorResponse);
     }
 

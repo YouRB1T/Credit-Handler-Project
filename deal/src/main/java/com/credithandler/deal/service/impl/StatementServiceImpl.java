@@ -35,7 +35,7 @@ public class StatementServiceImpl implements StatementService {
         log.info(">> createStatement, request: {}", request);
 
         Client client = clientService.createClient(request);
-        if (client.getClientId() == null) {
+        if (client == null || client.getClientId() == null) {
             log.error("Ошибка создания клиента. request: {}", request);
             throw BusinessException.of(
                     ErrorConstants.CLIENT_NOT_CREATED,
@@ -45,6 +45,14 @@ public class StatementServiceImpl implements StatementService {
         log.debug("Клиент создан: {}", client.getClientId());
 
         Statement statement = statementMapper.toEntity(request, client);
+        if (statement == null) {
+            log.error("Ошибка создания заявки. request: {}, clientId: {}",
+                    request, client.getClientId());
+            throw BusinessException.of(
+                    ErrorConstants.STATEMENT_NOT_CREATED,
+                    ErrorConstants.STATEMENT_NOT_CREATED_DESC
+            );
+        }
 
         statement.setStatus(ApplicationStatus.PREAPPROVAL);
         Statement savedStatement = statementRepository.save(statement);
