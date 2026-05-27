@@ -162,12 +162,15 @@ public class DocumentServiceImpl implements DocumentService {
 
     private Path findFontPath() {
         DocumentProperties.FontProperties font = documentProperties.getFont();
-        return List.of(
-                        Path.of(font.getWindowsArialPath()),
-                        Path.of(font.getLinuxDejavuPath()),
-                        Path.of(font.getLinuxDejavuAltPath())
-                )
+        if (font == null || font.getPath() == null || font.getPath().isBlank()) {
+            return null;
+        }
+
+        return List.of(font.getPath().split(","))
                 .stream()
+                .map(String::trim)
+                .filter(path -> !path.isBlank())
+                .map(Path::of)
                 .filter(Files::exists)
                 .findFirst()
                 .orElse(null);

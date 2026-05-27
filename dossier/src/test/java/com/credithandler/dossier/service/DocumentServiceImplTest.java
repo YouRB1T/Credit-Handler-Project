@@ -87,9 +87,11 @@ class DocumentServiceImplTest {
         properties.setIndividualConditionsBaseName("individual-conditions");
 
         DocumentProperties.FontProperties font = new DocumentProperties.FontProperties();
-        font.setWindowsArialPath(tempDir.resolve("missing-windows-font.ttf").toString());
-        font.setLinuxDejavuPath(tempDir.resolve("missing-linux-font.ttf").toString());
-        font.setLinuxDejavuAltPath(tempDir.resolve("missing-alt-font.ttf").toString());
+        font.setPath(String.join(",",
+                tempDir.resolve("missing-windows-font.ttf").toString(),
+                tempDir.resolve("missing-linux-font.ttf").toString(),
+                tempDir.resolve("missing-alt-font.ttf").toString()
+        ));
         properties.setFont(font);
 
         return properties;
