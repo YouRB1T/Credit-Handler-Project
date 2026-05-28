@@ -45,9 +45,18 @@ jobs:
       - name: Build and test with JaCoCo
         run: >
           mvn -B -ntp clean
+          -Dspring.kafka.listener.auto-startup=false
           org.jacoco:jacoco-maven-plugin:${{ env.JACOCO_VERSION }}:prepare-agent
           test
           org.jacoco:jacoco-maven-plugin:${{ env.JACOCO_VERSION }}:report
+
+      - name: Print test reports on failure
+        if: failure()
+        shell: bash
+        run: |
+          find . -path "*/target/surefire-reports/*.txt" -print -exec cat {} \;
+          find . -path "*/target/surefire-reports/*.dump" -print -exec cat {} \; || true
+          find . -path "*/target/surefire-reports/*.dumpstream" -print -exec cat {} \; || true
 
       - name: Upload test and coverage artifacts
         if: always()
