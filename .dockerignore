@@ -1,0 +1,15 @@
+.git
+.github
+.idea
+.vscode
+build
+*/build
+*.iml
+*.iws
+*.ipr
+.env
+**/.env
+docker-compose*.yml
+dossier-documents
+load-results
+README.md
