@@ -6,7 +6,6 @@ import com.credithandler.api.dto.model.Gender;
 import com.credithandler.api.dto.model.MaritalStatus;
 import com.credithandler.api.dto.registartion.FinishRegistrationRequestDto;
 import com.credithandler.api.dto.error.BusinessException;
-import com.credithandler.deal.PostgresIntegrationTest;
 import com.credithandler.deal.service.DealService;
 import com.credithandler.deal.service.StatementService;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
@@ -37,9 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Testcontainers(disabledWithoutDocker = true)
 @DisplayName("Тестирование контроллера deal")
-class DealControllerTest extends PostgresIntegrationTest {
+class DealControllerTest {
     @Autowired
     private MockMvc mockMvc;
 

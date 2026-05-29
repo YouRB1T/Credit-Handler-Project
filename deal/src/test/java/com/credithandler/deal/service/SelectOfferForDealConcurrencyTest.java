@@ -1,22 +1,24 @@
 package com.credithandler.deal.service;
 
 
-import com.credithandler.deal.PostgresIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.deal.model.Client;
 import com.credithandler.deal.model.Statement;
 import com.credithandler.deal.model.enums.ApplicationStatus;
+import com.credithandler.deal.repository.ClientRepository;
 import com.credithandler.deal.repository.StatementRepository;
+import com.credithandler.deal.service.EmailMessageProducer;
 import com.credithandler.deal.service.impl.DealServiceImpl;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -40,10 +42,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
 @DisplayName("Тестирование конкурентного выбора предложения")
-class SelectOfferForDealConcurrencyTest extends PostgresIntegrationTest {
+class SelectOfferForDealConcurrencyTest {
 
     @Autowired
     private DealServiceImpl dealService;
@@ -52,15 +53,26 @@ class SelectOfferForDealConcurrencyTest extends PostgresIntegrationTest {
     private StatementRepository statementRepository;
 
     @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
     private PlatformTransactionManager transactionManager;
+
+    @MockitoBean
+    private EmailMessageProducer emailMessageProducer;
 
     private Statement testStatement;
     private LoanOfferDto testOffer;
 
     @BeforeEach
     void setUp() {
+        Client client = new Client();
+        client.setEmail("client@example.com");
+        client = clientRepository.save(client);
+
         // Создаём заявку в статусе PREAPPROVAL
         testStatement = new Statement();
+        testStatement.setClientId(client.getClientId());
         testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
         testStatement.setHistoryStatus(new ArrayList<>());
         testStatement = statementRepository.save(testStatement);
@@ -80,6 +92,7 @@ class SelectOfferForDealConcurrencyTest extends PostgresIntegrationTest {
     @AfterEach
     void tearDown() {
         statementRepository.deleteAll();
+        clientRepository.deleteAll();
     }
 
     @Test
