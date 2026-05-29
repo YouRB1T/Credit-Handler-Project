@@ -4,9 +4,11 @@ import com.credithandler.deal.model.Statement;
 import com.credithandler.deal.repository.StatementRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -16,6 +18,8 @@ import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@ActiveProfiles("test")
+@DisplayName("Тестирование пессимистичной блокировки заявок")
 class StatementRepositoryPessimisticLockTest {
 
     @Autowired
@@ -39,6 +43,7 @@ class StatementRepositoryPessimisticLockTest {
     }
 
     @Test
+    @DisplayName("Второй вызов ждет освобождения блокировки первой транзакцией")
     void secondCallShouldWaitUntilFirstTransactionReleasesLock() throws Exception {
 
         UUID finalCreditId = UUID.randomUUID();

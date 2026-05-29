@@ -54,7 +54,7 @@ class CalculateCreditServiceImplTest {
     }
 
     @Test
-    @DisplayName("расчет крдеита с валидными данными")
+    @DisplayName("Расчет кредита с валидными данными")
     void calculateCredit_withValidData_shouldReturnCreditDto() {
 
         BigDecimal expectedRate = new BigDecimal("12.5");
@@ -108,7 +108,7 @@ class CalculateCreditServiceImplTest {
     }
 
     @Test
-    @DisplayName("Обработка случае без страховки")
+    @DisplayName("Обработка случая без страховки")
     void calculateCredit_withoutInsurance_shouldPassCorrectFlag() {
 
         ScoringDataDto requestWithoutInsurance = TestDataFactory.createValidScoringData();
@@ -132,7 +132,7 @@ class CalculateCreditServiceImplTest {
     }
 
     @Test
-    @DisplayName("Обработка случая не зарплатнаго клиента")
+    @DisplayName("Обработка случая незарплатного клиента")
     void calculateCredit_withoutSalaryClient_shouldPassCorrectFlag() {
 
         ScoringDataDto requestWithoutSalary = TestDataFactory.createValidScoringData();

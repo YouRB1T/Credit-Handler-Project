@@ -94,7 +94,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("ДУстановка ставки в 0% если она стала отрицательной")
+    @DisplayName("Установка ставки в 0%, если она стала отрицательной")
     void calculatePrescoringRate_shouldSetZeroRateWhenNegative() {
 
         ErrorProperties errorProperties = new ErrorProperties();
@@ -126,7 +126,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("BusinessException для безработного клиента")
+    @DisplayName("Выбрасывается BusinessException для безработного клиента")
     void instantRejection_withUnemployed_shouldThrowException() {
 
         ScoringDataDto unemployedData = TestDataFactory.createScoringDataWithUnemployed();
@@ -137,7 +137,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("BusinessException при слишком большой сумме кредита")
+    @DisplayName("Выбрасывается BusinessException при слишком большой сумме кредита")
     void instantRejection_withTooHighAmount_shouldThrowException() {
 
         ScoringDataDto highAmountData = TestDataFactory.createScoringDataWithHighAmount();
@@ -148,7 +148,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("BusinessException для не совершеннолетних")
+    @DisplayName("Выбрасывается BusinessException для несовершеннолетних")
     void instantRejection_withInvalidAge_shouldThrowException() {
         ScoringDataDto youngData = TestDataFactory.createScoringDataWithInvalidAge(17);
 
@@ -158,7 +158,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("BusinessException при недостаточном общем стаже")
+    @DisplayName("Выбрасывается BusinessException при недостаточном общем стаже")
     void instantRejection_withLowTotalExperience_shouldThrowException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -170,7 +170,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("BusinessException при недостаточном текущем стаже")
+    @DisplayName("Выбрасывается BusinessException при недостаточном текущем стаже")
     void instantRejection_withLowCurrentExperience_shouldThrowException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -193,7 +193,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfEmploymentStatus: самозанятый - увеличение ставки")
+    @DisplayName("Учет статуса занятости: самозанятый увеличивает ставку")
     void countOfEmploymentStatus_withSelfEmployed_shouldIncreaseRate() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -214,7 +214,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfEmploymentStatus: владелец бизнеса - увеличение ставки")
+    @DisplayName("Учет статуса занятости: владелец бизнеса увеличивает ставку")
     void countOfEmploymentStatus_withCompanyOwner_shouldIncreaseRate() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -234,7 +234,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfEmploymentStatus: наемный работник - без изменений")
+    @DisplayName("Учет статуса занятости: наемный работник не меняет ставку")
     void countOfEmploymentStatus_withEmployed_shouldNotChangeRate() {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setEmploymentStatus(EmploymentStatus.EMPLOYED);
@@ -252,7 +252,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfEmploymentStatus: null статус - должен выбрасывать BusinessException")
+    @DisplayName("Учет статуса занятости: null-статус выбрасывает BusinessException")
     void countOfEmploymentStatus_withNullStatus_shouldThrowBusinessException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -266,7 +266,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfPosition: middle manager - скидка")
+    @DisplayName("Учет должности: middle manager снижает ставку")
     void countOfPosition_withMiddleManager_shouldDecreaseRate() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -286,7 +286,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfPosition: top manager - скидка")
+    @DisplayName("Учет должности: top manager снижает ставку")
     void countOfPosition_withTopManager_shouldDecreaseRate() {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.getEmployment().setPosition(EmploymentPosition.TOP_MANAGER);
@@ -305,7 +305,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfPosition: null позиция - должен выбрасывать BusinessException")
+    @DisplayName("Учет должности: null-позиция выбрасывает BusinessException")
     void countOfPosition_withNullPosition_shouldThrowBusinessException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -319,7 +319,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfMaritalStatus: married - скидка")
+    @DisplayName("Учет семейного положения: married снижает ставку")
     void countOfMaritalStatus_withMarried_shouldDecreaseRate() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -339,7 +339,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfMaritalStatus: divorced - повышение")
+    @DisplayName("Учет семейного положения: divorced повышает ставку")
     void countOfMaritalStatus_withDivorced_shouldIncreaseRate() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -359,7 +359,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("countOfMaritalStatus: single - повышение")
+    @DisplayName("Учет семейного положения: single повышает ставку")
     void countOfMaritalStatus_withSingle_shouldIncreaseRateByOne() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -380,7 +380,7 @@ class CalculateRateServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideGenderAndAgeData")
-    @DisplayName("countOfGenderAndAge: проверка всех комбинаций пола и возраста")
+    @DisplayName("Учет пола и возраста: проверка всех комбинаций")
     void countOfGenderAndAge_withDifferentGendersAndAges_shouldAdjustRateCorrectly(
             Gender gender, int age, BigDecimal expectedChange) {
 
@@ -421,7 +421,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("ensureNonNegativeRate: ставка не может быть отрицательной")
+    @DisplayName("Проверка неотрицательной ставки: ставка не может быть отрицательной")
     void ensureNonNegativeRate_shouldNotAllowNegativeRate() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -439,7 +439,7 @@ class CalculateRateServiceImplTest {
 
 
     @Test
-    @DisplayName("instantRejection: точная граница максимальной суммы кредита")
+    @DisplayName("Мгновенный отказ: точная граница максимальной суммы кредита")
     void instantRejection_withExactMaxAmount_shouldNotThrowException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -451,7 +451,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("instantRejection: точная граница минимального возраста")
+    @DisplayName("Мгновенный отказ: точная граница минимального возраста")
     void instantRejection_withExactMinAge_shouldNotThrowException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -461,7 +461,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("instantRejection: точная граница максимального возраста")
+    @DisplayName("Мгновенный отказ: точная граница максимального возраста")
     void instantRejection_withExactMaxAge_shouldNotThrowException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -471,7 +471,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("instantRejection: точная граница минимального общего стажа")
+    @DisplayName("Мгновенный отказ: точная граница минимального общего стажа")
     void instantRejection_withExactMinTotalExperience_shouldNotThrowException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -481,7 +481,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("instantRejection: точная граница минимального текущего стажа")
+    @DisplayName("Мгновенный отказ: точная граница минимального текущего стажа")
     void instantRejection_withExactMinCurrentExperience_shouldNotThrowException() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -570,7 +570,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("ensureNonNegativeRate: комбинация факторов, дающая отрицательную ставку")
+    @DisplayName("Проверка неотрицательной ставки: комбинация факторов дает отрицательную ставку")
     void ensureNonNegativeRate_withManyDiscounts_shouldReturnZero() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -596,7 +596,7 @@ class CalculateRateServiceImplTest {
 
 
     @Test
-    @DisplayName("calculateAge: день рождения сегодня")
+    @DisplayName("Расчет возраста: день рождения сегодня")
     void calculateAge_withBirthdayToday_shouldReturnCorrectAge() {
 
         ScoringDataDto data = TestDataFactory.createValidScoringData();
@@ -608,7 +608,7 @@ class CalculateRateServiceImplTest {
     }
 
     @Test
-    @DisplayName("calculateAge: день рождения завтра")
+    @DisplayName("Расчет возраста: день рождения завтра")
     void calculateAge_withBirthdayTomorrow_shouldReturnCorrectAge() {
         ScoringDataDto data = TestDataFactory.createValidScoringData();
         data.setBirthdate(LocalDate.now().minusYears(30).plusDays(1));

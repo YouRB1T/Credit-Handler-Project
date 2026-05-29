@@ -33,6 +33,7 @@ import com.credithandler.deal.service.EmailMessageProducer;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -171,7 +172,14 @@ public class DealServiceImpl implements DealService {
         CreditDto creditDto;
 
         try {
-            creditDto = calculatorClient.calculateCredit(scoringData).getBody();
+            ResponseEntity<CreditDto> calculatorResponse = calculatorClient.calculateCredit(scoringData);
+            if (calculatorResponse == null || calculatorResponse.getBody() == null) {
+                throw BusinessException.of(
+                        ErrorConstants.CREDIT_NOT_CALCULATED,
+                        ErrorConstants.CREDIT_NOT_CALCULATED_DESC
+                );
+            }
+            creditDto = calculatorResponse.getBody();
 
             log.debug("CreditDto получен от калькулятора");
 

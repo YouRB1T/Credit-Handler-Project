@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+@DisplayName("Тестирование маппера скоринговых данных")
 
 class ScoringDataMapperTest {
 

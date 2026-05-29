@@ -1,5 +1,6 @@
 package com.credithandler.calculator.service.impl;
 
+import com.credithandler.api.dto.error.BusinessException;
 import com.credithandler.calculator.service.CalculateMonthlyPaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,9 @@ import java.math.RoundingMode;
 @Slf4j
 @Service
 public class CalculateMonthlyPaymentImpl implements CalculateMonthlyPaymentService {
+
+    private static final String INCORRECT_ANNUAL_RATE = "Процентная ставка некорректна";
+    private static final String ANNUAL_RATE_MORE_THEN_ZERO = "Процентная ставка должна быть больше 0";
 
     private static final int CALCULATION_SCALE = 10;
     private static final int RESULT_SCALE = 2;
@@ -29,6 +33,13 @@ public class CalculateMonthlyPaymentImpl implements CalculateMonthlyPaymentServi
     @Override
     public BigDecimal monthlyPayment(BigDecimal amount, BigDecimal annualRate, Integer term) {
         log.info(">> monthlyPayment, amount: {}, annualRate: {}, term: {}", amount, annualRate, term);
+
+        if (annualRate == null || annualRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw BusinessException.of(
+                    INCORRECT_ANNUAL_RATE,
+                    ANNUAL_RATE_MORE_THEN_ZERO
+            );
+        }
 
         BigDecimal monthlyRate = annualRate
                 .divide(MONTHES, CALCULATION_SCALE, RoundingMode.HALF_UP)

@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+  pull_request:
+    branches:
+      - main
+      - master
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  JAVA_VERSION: "21"
+  JACOCO_VERSION: "0.8.12"
+  SONAR_MAVEN_PLUGIN_VERSION: "5.1.0.4751"
+  JACOCO_REPORT_PATHS: calculator/target/site/jacoco/jacoco.xml,deal/target/site/jacoco/jacoco.xml,dossier/target/site/jacoco/jacoco.xml,gateway/target/site/jacoco/jacoco.xml,statement/target/site/jacoco/jacoco.xml
+
+jobs:
+  build-test-analyze:
+    name: Build, Test, Coverage, Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: credit_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d credit_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build and test with JaCoCo
+        run: >
+          mvn -B -ntp clean
+          -Dspring.kafka.listener.auto-startup=false
+          org.jacoco:jacoco-maven-plugin:${{ env.JACOCO_VERSION }}:prepare-agent
+          test
+          org.jacoco:jacoco-maven-plugin:${{ env.JACOCO_VERSION }}:report
+
+      - name: Print test reports on failure
+        if: failure()
+        shell: bash
+        run: |
+          find . -path "*/target/surefire-reports/*.txt" -print -exec cat {} \;
+          find . -path "*/target/surefire-reports/*.dump" -print -exec cat {} \; || true
+          find . -path "*/target/surefire-reports/*.dumpstream" -print -exec cat {} \; || true
+
+      - name: Upload test and coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-and-coverage-reports
+          if-no-files-found: ignore
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
+            **/target/site/jacoco/**
+
+      - name: Upload coverage to Codecov
+        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.JACOCO_REPORT_PATHS }}
+          flags: java
+          name: credit-handler-java
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: SonarCloud analysis
+        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ] || [ -z "$SONAR_PROJECT_KEY" ] || [ -z "$SONAR_ORGANIZATION" ]; then
+            echo "SONAR_TOKEN, SONAR_PROJECT_KEY and SONAR_ORGANIZATION must be configured in GitHub." >&2
+            exit 1
+          fi
+
+          mvn -B -ntp org.sonarsource.scanner.maven:sonar-maven-plugin:${SONAR_MAVEN_PLUGIN_VERSION}:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization="$SONAR_ORGANIZATION" \
+            -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+            -Dsonar.coverage.jacoco.xmlReportPaths="$JACOCO_REPORT_PATHS"

@@ -5,6 +5,7 @@ import com.credithandler.api.dto.loan.LoanStatementRequestDto;
 import com.credithandler.api.dto.model.StatementDto;
 import com.credithandler.statement.client.DealClient;
 import com.credithandler.statement.service.impl.LoanServiceImpl;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Тестирование сервиса заявок statement")
 class LoanServiceImplTest {
 
     @Mock
@@ -28,6 +30,7 @@ class LoanServiceImplTest {
     private LoanServiceImpl loanService;
 
     @Test
+    @DisplayName("Прескоринг возвращает кредитные предложения")
     void prescoringShouldReturnLoanOffers() {
         LoanStatementRequestDto request = new LoanStatementRequestDto();
 
@@ -46,6 +49,7 @@ class LoanServiceImplTest {
     }
 
     @Test
+    @DisplayName("Прескоринг возвращает null если тело ответа клиента null")
     void prescoringShouldReturnNullWhenClientBodyIsNull() {
         LoanStatementRequestDto request = new LoanStatementRequestDto();
 
@@ -59,6 +63,7 @@ class LoanServiceImplTest {
     }
 
     @Test
+    @DisplayName("Выбор предложения возвращает заявку")
     void selectOfferShouldReturnStatementDto() {
         LoanOfferDto offer = new LoanOfferDto();
 
@@ -79,6 +84,7 @@ class LoanServiceImplTest {
     }
 
     @Test
+    @DisplayName("Выбор предложения возвращает null если тело ответа клиента null")
     void selectOfferShouldReturnNullWhenClientBodyIsNull() {
         LoanOfferDto offer = new LoanOfferDto();
 

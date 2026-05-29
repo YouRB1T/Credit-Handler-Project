@@ -1,23 +1,24 @@
 package com.credithandler.deal.service;
 
+
+import org.junit.jupiter.api.DisplayName;
 import com.credithandler.api.dto.loan.LoanOfferDto;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.deal.model.Client;
 import com.credithandler.deal.model.Statement;
 import com.credithandler.deal.model.enums.ApplicationStatus;
+import com.credithandler.deal.repository.ClientRepository;
 import com.credithandler.deal.repository.StatementRepository;
+import com.credithandler.deal.service.EmailMessageProducer;
 import com.credithandler.deal.service.impl.DealServiceImpl;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,12 +42,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers
 @DirtiesContext
+@DisplayName("Тестирование конкурентного выбора предложения")
 class SelectOfferForDealConcurrencyTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @Autowired
     private DealServiceImpl dealService;
@@ -55,23 +53,26 @@ class SelectOfferForDealConcurrencyTest {
     private StatementRepository statementRepository;
 
     @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
     private PlatformTransactionManager transactionManager;
+
+    @MockitoBean
+    private EmailMessageProducer emailMessageProducer;
 
     private Statement testStatement;
     private LoanOfferDto testOffer;
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
-    }
-
     @BeforeEach
     void setUp() {
+        Client client = new Client();
+        client.setEmail("client@example.com");
+        client = clientRepository.save(client);
+
         // Создаём заявку в статусе PREAPPROVAL
         testStatement = new Statement();
+        testStatement.setClientId(client.getClientId());
         testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
         testStatement.setHistoryStatus(new ArrayList<>());
         testStatement = statementRepository.save(testStatement);
@@ -91,6 +92,7 @@ class SelectOfferForDealConcurrencyTest {
     @AfterEach
     void tearDown() {
         statementRepository.deleteAll();
+        clientRepository.deleteAll();
     }
 
     @Test

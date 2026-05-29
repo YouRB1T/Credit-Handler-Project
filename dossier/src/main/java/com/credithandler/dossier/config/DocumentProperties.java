@@ -23,8 +23,6 @@ public class DocumentProperties {
     @Setter
     public static class FontProperties {
 
-        private String windowsArialPath;
-        private String linuxDejavuPath;
-        private String linuxDejavuAltPath;
+        private String path;
     }
 }

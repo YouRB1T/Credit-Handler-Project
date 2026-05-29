@@ -24,6 +24,9 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
+    @Value("${spring.kafka.listener.auto-startup:true}")
+    private boolean listenerAutoStartup;
+
     @Bean
     public ConsumerFactory<String, EmailMessage> emailMessageConsumerFactory() {
         JsonDeserializer<EmailMessage> valueDeserializer = new JsonDeserializer<>(EmailMessage.class);
@@ -62,6 +65,7 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, EmailMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(emailMessageConsumerFactory());
+        factory.setAutoStartup(listenerAutoStartup);
         return factory;
     }
 
@@ -70,6 +74,7 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, StatementDto> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(statementDtoConsumerFactory());
+        factory.setAutoStartup(listenerAutoStartup);
         return factory;
     }
 
