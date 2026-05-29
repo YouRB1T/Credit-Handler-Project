@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title th:text="${subject}">Credit Handler</title>
+    <style>
+        @media screen and (max-width: 640px) {
+            .email-shell {
+                width: 100% !important;
+            }
+
+            .email-card {
+                border-radius: 0 !important;
+            }
+
+            .email-padding {
+                padding: 24px !important;
+            }
+
+            .email-title {
+                font-size: 24px !important;
+                line-height: 31px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0; background:#f2f5f8; color:#102033; font-family:Arial, Helvetica, sans-serif;">
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;" th:text="${preheader}">
+    Важное уведомление по кредитной заявке.
+</div>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f2f5f8;">
+    <tr>
+        <td align="center" style="padding:32px 12px;">
+            <table class="email-shell" role="presentation" width="640" cellspacing="0" cellpadding="0" border="0"
+                   style="width:640px; max-width:640px;">
+                <tr>
+                    <td style="padding:0 0 14px 0;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                            <tr>
+                                <td style="font-size:18px; line-height:24px; font-weight:700; color:#12355b;">
+                                    Credit Handler
+                                </td>
+                                <td align="right" style="font-size:12px; line-height:18px; color:#607086;">
+                                    Уведомление банка
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="email-card" style="background:#ffffff; border:1px solid #d9e2ec; border-radius:8px; overflow:hidden;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                            <tr>
+                                <td style="height:6px; background:#1f7a5c; line-height:6px; font-size:6px;">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="email-padding" style="padding:34px 40px 28px 40px;">
+                                    <div th:if="${badge != null}"
+                                         style="display:inline-block; padding:6px 10px; border-radius:999px; background:#e8f5ef; color:#176549; font-size:12px; line-height:16px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;"
+                                         th:text="${badge}">
+                                        Статус
+                                    </div>
+
+                                    <h1 class="email-title"
+                                        style="margin:18px 0 12px 0; font-size:28px; line-height:36px; font-weight:700; color:#102033;"
+                                        th:text="${title}">
+                                        Важное уведомление
+                                    </h1>
+
+                                    <p style="margin:0; font-size:16px; line-height:25px; color:#405166;"
+                                       th:text="${lead}">
+                                        Подробности по вашей кредитной заявке.
+                                    </p>
+
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                           style="margin-top:28px; border:1px solid #dbe4ee; border-radius:8px; border-collapse:separate; overflow:hidden;">
+                                        <tr th:if="${statementId != null}">
+                                            <td style="padding:14px 16px; border-bottom:1px solid #e8eef5; color:#607086; font-size:14px; line-height:20px;">
+                                                Номер заявки
+                                            </td>
+                                            <td align="right" style="padding:14px 16px; border-bottom:1px solid #e8eef5; color:#102033; font-size:14px; line-height:20px; font-weight:700;"
+                                                th:text="${statementId}">
+                                                00000000-0000-0000-0000-000000000000
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${status != null}">
+                                            <td style="padding:14px 16px; border-bottom:1px solid #e8eef5; color:#607086; font-size:14px; line-height:20px;">
+                                                Статус
+                                            </td>
+                                            <td align="right" style="padding:14px 16px; border-bottom:1px solid #e8eef5; color:#102033; font-size:14px; line-height:20px; font-weight:700;"
+                                                th:text="${status}">
+                                                STATUS
+                                            </td>
+                                        </tr>
+                                        <tr th:each="detail, detailStat : ${details}">
+                                            <td style="padding:14px 16px; color:#607086; font-size:14px; line-height:20px;"
+                                                th:styleappend="${!detailStat.last} ? 'border-bottom:1px solid #e8eef5;'"
+                                                th:text="${detail.label}">
+                                                Деталь
+                                            </td>
+                                            <td align="right" style="padding:14px 16px; color:#102033; font-size:14px; line-height:20px; font-weight:700;"
+                                                th:styleappend="${!detailStat.last} ? 'border-bottom:1px solid #e8eef5;'"
+                                                th:text="${detail.value}">
+                                                Значение
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <div th:if="${code != null}" style="margin-top:28px;">
+                                        <div style="margin:0 0 10px 0; color:#607086; font-size:13px; line-height:18px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;">
+                                            Код подтверждения
+                                        </div>
+                                        <div style="padding:18px 20px; border-radius:8px; background:#f7f9fc; border:1px solid #dbe4ee; color:#102033; font-family:'Courier New', Courier, monospace; font-size:32px; line-height:40px; font-weight:700; text-align:center; letter-spacing:6px;"
+                                             th:text="${code}">
+                                            1234
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${hasDocuments}" style="margin-top:28px;">
+                                        <div style="margin:0 0 10px 0; color:#607086; font-size:13px; line-height:18px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;">
+                                            Документы во вложении
+                                        </div>
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr th:each="document : ${documents}">
+                                                <td style="padding:10px 0; border-top:1px solid #e8eef5; color:#102033; font-size:15px; line-height:22px;">
+                                                    <span style="display:inline-block; width:22px; color:#1f7a5c;">PDF</span>
+                                                    <span th:text="${document}">document.pdf</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+
+                                    <div th:if="${nextStepTitle != null or nextStepText != null}"
+                                         style="margin-top:28px; padding:18px 20px; border-radius:8px; background:#f7f9fc; border:1px solid #dbe4ee;">
+                                        <div style="margin:0 0 6px 0; color:#102033; font-size:16px; line-height:22px; font-weight:700;"
+                                             th:text="${nextStepTitle}">
+                                            Что дальше
+                                        </div>
+                                        <div style="margin:0; color:#405166; font-size:15px; line-height:23px;"
+                                             th:text="${nextStepText}">
+                                            Проверьте данные и продолжите оформление.
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${securityNote != null}"
+                                         style="margin-top:24px; padding:16px 18px; border-left:4px solid #d89b2b; background:#fff8ea; color:#5a4217; font-size:14px; line-height:22px;">
+                                        <strong>Безопасность.</strong>
+                                        <span th:text="${securityNote}">
+                                            Не сообщайте коды подтверждения и пароли третьим лицам.
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:18px 4px 0 4px; color:#718096; font-size:12px; line-height:19px;">
+                        Это автоматическое письмо. Если вы не оформляли кредитную заявку, не открывайте вложения и обратитесь в поддержку.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

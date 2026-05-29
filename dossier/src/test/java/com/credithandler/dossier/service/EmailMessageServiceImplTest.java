@@ -4,7 +4,9 @@ import com.credithandler.api.dto.dossier.EmailMessage;
 import com.credithandler.api.dto.dossier.EmailTheme;
 import com.credithandler.api.dto.model.ApplicationStatus;
 import com.credithandler.api.dto.model.StatementDto;
+import com.credithandler.dossier.model.EmailTemplateModel;
 import com.credithandler.dossier.model.GeneratedDocument;
+import com.credithandler.dossier.model.RenderedEmail;
 import com.credithandler.dossier.service.impl.EmailMessageServiceImpl;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -21,7 +23,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -33,6 +34,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
@@ -57,6 +59,9 @@ class EmailMessageServiceImplTest {
     @Mock
     private DocumentService documentService;
 
+    @Mock
+    private EmailTemplateService emailTemplateService;
+
     @InjectMocks
     private EmailMessageServiceImpl emailMessageService;
 
@@ -66,57 +71,57 @@ class EmailMessageServiceImplTest {
     }
 
     @Test
-    @DisplayName("processFinishRegistration отправляет простое письмо")
-    void processFinishRegistration_shouldSendSimpleEmail() {
+    @DisplayName("processFinishRegistration отправляет HTML письмо")
+    void processFinishRegistration_shouldSendHtmlEmail() throws Exception {
         EmailMessage message = emailMessage();
-        ArgumentCaptor<SimpleMailMessage> mailCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        MimeMessage mimeMessage = prepareMimeMessage(FINISH_REGISTRATION_SUBJECT);
+        ArgumentCaptor<EmailTemplateModel> modelCaptor = ArgumentCaptor.forClass(EmailTemplateModel.class);
 
         emailMessageService.processFinishRegistration(message);
 
-        verify(javaMailSender).send(mailCaptor.capture());
+        verify(emailTemplateService).render(modelCaptor.capture());
+        verify(javaMailSender).send(mimeMessage);
 
-        assertThat(mailCaptor.getValue().getFrom()).isEqualTo(MAIL_FROM);
-        assertThat(mailCaptor.getValue().getTo()).containsExactly(message.getAddress());
-        assertThat(mailCaptor.getValue().getSubject()).isEqualTo(FINISH_REGISTRATION_SUBJECT);
-        assertThat(mailCaptor.getValue().getText())
-                .contains(message.getStatementId().toString())
-                .contains(message.getText());
+        assertThat(modelCaptor.getValue().statementId()).isEqualTo(message.getStatementId());
+        assertThat(modelCaptor.getValue().lead()).contains(message.getText());
+        assertThat(mimeMessage.getAllRecipients()).hasSize(1);
+        assertThat(mimeMessage.getSubject()).isEqualTo(FINISH_REGISTRATION_SUBJECT);
     }
 
     @Test
-    @DisplayName("processCreateDocuments создает документы и отправляет письмо")
-    void processCreateDocuments_shouldCreateDocumentsAndSendEmail() {
+    @DisplayName("processCreateDocuments создает документы и отправляет HTML письмо")
+    void processCreateDocuments_shouldCreateDocumentsAndSendHtmlEmail() throws Exception {
         StatementDto statement = statement();
-        ArgumentCaptor<SimpleMailMessage> mailCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        MimeMessage mimeMessage = prepareMimeMessage(CREATE_DOCUMENTS_SUBJECT);
+        ArgumentCaptor<EmailTemplateModel> modelCaptor = ArgumentCaptor.forClass(EmailTemplateModel.class);
 
         emailMessageService.processCreateDocuments(statement);
 
         verify(documentService).createCreditDocuments(statement);
-        verify(javaMailSender).send(mailCaptor.capture());
+        verify(emailTemplateService).render(modelCaptor.capture());
+        verify(javaMailSender).send(mimeMessage);
 
-        assertThat(mailCaptor.getValue().getFrom()).isEqualTo(MAIL_FROM);
-        assertThat(mailCaptor.getValue().getTo()).containsExactly(statement.getEmail());
-        assertThat(mailCaptor.getValue().getSubject()).isEqualTo(CREATE_DOCUMENTS_SUBJECT);
-        assertThat(mailCaptor.getValue().getText())
-                .contains(statement.getStatementId().toString())
-                .contains(statement.getStatus().name());
+        assertThat(modelCaptor.getValue().statementId()).isEqualTo(statement.getStatementId());
+        assertThat(modelCaptor.getValue().status()).isEqualTo(statement.getStatus().name());
+        assertThat(mimeMessage.getAllRecipients()).hasSize(1);
+        assertThat(mimeMessage.getSubject()).isEqualTo(CREATE_DOCUMENTS_SUBJECT);
     }
 
     @Test
     @DisplayName("processSendDocuments отправляет письмо с вложениями")
     void processSendDocuments_shouldSendEmailWithAttachments() throws Exception {
         StatementDto statement = statement();
-        MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
+        MimeMessage mimeMessage = prepareMimeMessage(SEND_DOCUMENTS_SUBJECT);
         List<GeneratedDocument> documents = List.of(
                 new GeneratedDocument("contract-id.pdf", "contract.pdf", "application/pdf", new byte[]{1, 2, 3})
         );
 
         when(documentService.getCreditDocuments(statement)).thenReturn(documents);
-        when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         emailMessageService.processSendDocuments(statement);
 
         verify(documentService).getCreditDocuments(statement);
+        verify(emailTemplateService).render(any(EmailTemplateModel.class));
         verify(javaMailSender).send(mimeMessage);
 
         assertThat(mimeMessage.getAllRecipients()).hasSize(1);
@@ -124,48 +129,50 @@ class EmailMessageServiceImplTest {
     }
 
     @Test
-    @DisplayName("processCreditIssued отправляет письмо о выдаче кредита")
-    void processCreditIssued_shouldSendSimpleEmail() {
+    @DisplayName("processCreditIssued отправляет HTML письмо о выдаче кредита")
+    void processCreditIssued_shouldSendHtmlEmail() throws Exception {
         EmailMessage message = emailMessage();
-        ArgumentCaptor<SimpleMailMessage> mailCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        MimeMessage mimeMessage = prepareMimeMessage(CREDIT_ISSUED_SUBJECT);
 
         emailMessageService.processCreditIssued(message);
 
-        verify(javaMailSender).send(mailCaptor.capture());
+        verify(emailTemplateService).render(any(EmailTemplateModel.class));
+        verify(javaMailSender).send(mimeMessage);
 
-        assertThat(mailCaptor.getValue().getTo()).containsExactly(message.getAddress());
-        assertThat(mailCaptor.getValue().getSubject()).isEqualTo(CREDIT_ISSUED_SUBJECT);
-        assertThat(mailCaptor.getValue().getText()).contains(message.getStatementId().toString());
+        assertThat(mimeMessage.getAllRecipients()).hasSize(1);
+        assertThat(mimeMessage.getSubject()).isEqualTo(CREDIT_ISSUED_SUBJECT);
     }
 
     @Test
-    @DisplayName("processSendSes sends simple email")
-    void processSendSes_shouldSendSimpleEmail() {
+    @DisplayName("processSendSes sends HTML email")
+    void processSendSes_shouldSendHtmlEmail() throws Exception {
         EmailMessage message = emailMessage();
-        ArgumentCaptor<SimpleMailMessage> mailCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        MimeMessage mimeMessage = prepareMimeMessage(SEND_SES_SUBJECT);
+        ArgumentCaptor<EmailTemplateModel> modelCaptor = ArgumentCaptor.forClass(EmailTemplateModel.class);
 
         emailMessageService.processSendSes(message);
 
-        verify(javaMailSender).send(mailCaptor.capture());
+        verify(emailTemplateService).render(modelCaptor.capture());
+        verify(javaMailSender).send(mimeMessage);
 
-        assertThat(mailCaptor.getValue().getTo()).containsExactly(message.getAddress());
-        assertThat(mailCaptor.getValue().getSubject()).isEqualTo(SEND_SES_SUBJECT);
-        assertThat(mailCaptor.getValue().getText()).contains(message.getText(), message.getStatementId().toString());
+        assertThat(modelCaptor.getValue().code()).isEqualTo(message.getText());
+        assertThat(mimeMessage.getAllRecipients()).hasSize(1);
+        assertThat(mimeMessage.getSubject()).isEqualTo(SEND_SES_SUBJECT);
     }
 
     @Test
-    @DisplayName("processStatementDenied sends simple email")
-    void processStatementDenied_shouldSendSimpleEmail() {
+    @DisplayName("processStatementDenied sends HTML email")
+    void processStatementDenied_shouldSendHtmlEmail() throws Exception {
         EmailMessage message = emailMessage();
-        ArgumentCaptor<SimpleMailMessage> mailCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        MimeMessage mimeMessage = prepareMimeMessage(STATEMENT_DENIED_SUBJECT);
 
         emailMessageService.processStatementDenied(message);
 
-        verify(javaMailSender).send(mailCaptor.capture());
+        verify(emailTemplateService).render(any(EmailTemplateModel.class));
+        verify(javaMailSender).send(mimeMessage);
 
-        assertThat(mailCaptor.getValue().getTo()).containsExactly(message.getAddress());
-        assertThat(mailCaptor.getValue().getSubject()).isEqualTo(STATEMENT_DENIED_SUBJECT);
-        assertThat(mailCaptor.getValue().getText()).contains(message.getStatementId().toString());
+        assertThat(mimeMessage.getAllRecipients()).hasSize(1);
+        assertThat(mimeMessage.getSubject()).isEqualTo(STATEMENT_DENIED_SUBJECT);
     }
 
     @Nested
@@ -187,11 +194,12 @@ class EmailMessageServiceImplTest {
         }
 
         @Test
-        void simpleEmailThrowsRecipientNotReachedWhenSendFailedIsCause() {
+        void htmlEmailThrowsRecipientNotReachedWhenSendFailedIsCause() {
             EmailMessage message = emailMessage();
+            prepareMimeMessage(CREDIT_ISSUED_SUBJECT);
             doThrow(new MailSendException("smtp failed", new SendFailedException("rejected")))
                     .when(javaMailSender)
-                    .send(org.mockito.ArgumentMatchers.any(SimpleMailMessage.class));
+                    .send(any(MimeMessage.class));
 
             assertThatThrownBy(() -> emailMessageService.processCreditIssued(message))
                     .isInstanceOf(com.credithandler.api.dto.error.BusinessException.class)
@@ -199,16 +207,28 @@ class EmailMessageServiceImplTest {
         }
 
         @Test
-        void simpleEmailThrowsGenericSendErrorForOtherMailFailures() {
+        void htmlEmailThrowsGenericSendErrorForOtherMailFailures() {
             EmailMessage message = emailMessage();
+            prepareMimeMessage(CREDIT_ISSUED_SUBJECT);
             doThrow(new MailSendException("smtp failed"))
                     .when(javaMailSender)
-                    .send(org.mockito.ArgumentMatchers.any(SimpleMailMessage.class));
+                    .send(any(MimeMessage.class));
 
             assertThatThrownBy(() -> emailMessageService.processCreditIssued(message))
                     .isInstanceOf(com.credithandler.api.dto.error.BusinessException.class)
                     .hasMessage(EMAIL_SEND_ERROR);
         }
+    }
+
+    private MimeMessage prepareMimeMessage(String subject) {
+        MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
+        when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
+        when(emailTemplateService.render(any(EmailTemplateModel.class))).thenReturn(renderedEmail(subject));
+        return mimeMessage;
+    }
+
+    private RenderedEmail renderedEmail(String subject) {
+        return new RenderedEmail(subject, "Plain text", "<!DOCTYPE html><html><body>HTML text</body></html>");
     }
 
     private EmailMessage emailMessage() {
